@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# -*- coding: utf-8 -*-
 #
 # Copyright 2022 Ian Cohn
 # https://www.github.com/iancohn
@@ -15,10 +16,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from autopkglib import ProcessorError, Processor, URLTextSearcher
+import json
+import re
 from inspect import _void
-from time import sleep
-import re, json
+
+from autopkglib import Processor, ProcessorError, URLTextSearcher
 
 __all__ = ["CVEScoreGetter"]
 
@@ -27,6 +29,7 @@ CVSS_VERSION_OPTS = ["v3,v2"]
 CVSS_VERSION_DEFAULT = "v3"
 CVE_NULL_RATING_DEFAULT = ""
 PAUSE_INTERVAL = 5
+
 
 
 class CVEScoreGetter(URLTextSearcher):
@@ -91,6 +94,7 @@ class CVEScoreGetter(URLTextSearcher):
         )
         rePattern = re.compile(pattern, re.I)
         myMatch = rePattern.search(html)
+
         if myMatch == None:
             score = "0.0"
             rating = "N/A"
@@ -104,6 +108,7 @@ class CVEScoreGetter(URLTextSearcher):
             rating = groupDict["risk_rating"].capitalize()
 
             self.output("Score: {}\tRating: {}".format(score, rating), verbose_level=3)
+
         scoreDict["risk_score"] = score
         scoreDict["risk_rating"] = rating
 
