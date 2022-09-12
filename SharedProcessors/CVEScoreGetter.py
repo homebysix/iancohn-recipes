@@ -31,7 +31,6 @@ CVE_NULL_RATING_DEFAULT = ""
 PAUSE_INTERVAL = 5
 
 
-
 class CVEScoreGetter(URLTextSearcher):
     """
     Search the National Vulnerability Database for provided CVEs, return the maximum score and corresponding rating category.
@@ -50,9 +49,7 @@ class CVEScoreGetter(URLTextSearcher):
         },
         "cvss_version": {
             "required": False,
-            "description": "CVSS version to use in risk calculation. Options: {}".format(
-                CVSS_VERSION_OPTS
-            ),
+            "description": f"CVSS version to use in risk calculation. Options: {CVSS_VERSION_OPTS}",
             "default": CVSS_VERSION_DEFAULT,
         },
         "null_cve_rating": {
@@ -85,13 +82,11 @@ class CVEScoreGetter(URLTextSearcher):
         url = NVD_SEARCH_URL_BASE + cve
 
         self.output(
-            "Getting {} score for {}.".format(cvssVersion, cve), verbose_level=3
+            f"Getting {cvssVersion} score for {cve}.", verbose_level=3
         )
         html = self.download(url, text=True)
 
-        pattern = '\\"severityDetail\\"[\s\S]*?{}\-calculator[\s\S]*?((?P<risk_score>[\d\.]*)\s+(?P<risk_rating>\w*))\<\/a\>'.format(
-            cvssVersion
-        )
+        pattern = f'\\"severityDetail\\"[\s\S]*?{cvssVersion}\-calculator[\s\S]*?((?P<risk_score>[\d\.]*)\s+(?P<risk_rating>\w*))\<\/a\>'
         rePattern = re.compile(pattern, re.I)
         myMatch = rePattern.search(html)
 
@@ -107,7 +102,7 @@ class CVEScoreGetter(URLTextSearcher):
             score = groupDict["risk_score"]
             rating = groupDict["risk_rating"].capitalize()
 
-            self.output("Score: {}\tRating: {}".format(score, rating), verbose_level=3)
+            self.output(f"Score: {score}\tRating: {rating}", verbose_level=3)
 
         scoreDict["risk_score"] = score
         scoreDict["risk_rating"] = rating
@@ -128,13 +123,11 @@ class CVEScoreGetter(URLTextSearcher):
                     scores.append(score)
                     sleep(pauseInterval)
                     self.output(
-                        "Pausing {} seconds to avoid rate limiting.".format(
-                            pauseInterval
-                        ),
+                        f"Pausing {pauseInterval} seconds to avoid rate limiting.",
                         verbose_level=3,
                     )
 
-            self.output("Found {} CVE Scores.".format(len(scores)), verbose_level=3)
+            self.output(f"Found {len(scores)} CVE Scores.", verbose_level=3)
 
             scores.sort(key=lambda x: x["risk_score"], reverse=True)
 
@@ -151,9 +144,7 @@ class CVEScoreGetter(URLTextSearcher):
                 )
 
             self.output(
-                "Maximum CVSS Score: {}\tRating: {}".format(
-                    self.env["maximum_cve_score"], self.env["maximum_cve_rating"]
-                ),
+                f"Maximum CVSS Score: {self.env["maximum_cve_score"]}\tRating: {self.env["maximum_cve_rating"]}",
                 verbose_level=1,
             )
 
