@@ -73,6 +73,7 @@
 						<array>
 							<string>Dell Inc</string>
 							<string>Entrust Extended Validation Code Signing CA - EVCS1</string>
+							<string>Entrust Code Signing Root Certification Authority - CSBR1</string>
 							<string>Entrust.net</string>
 						</array>
 					</dict>
@@ -94,6 +95,7 @@
 						<array>
 							<string>Dell Inc</string>
 							<string>Entrust Extended Validation Code Signing CA - EVCS1</string>
+							<string>Entrust Code Signing Root Certification Authority - CSBR1</string>
 							<string>Entrust.net</string>
 						</array>
 					</dict>
@@ -115,6 +117,7 @@
 						<array>
 							<string>Dell Inc</string>
 							<string>Entrust Extended Validation Code Signing CA - EVCS1</string>
+							<string>Entrust Code Signing Root Certification Authority - CSBR1</string>
 							<string>Entrust.net</string>
 						</array>
 					</dict>
@@ -136,6 +139,7 @@
 						<array>
 							<string>Dell Inc</string>
 							<string>Entrust Extended Validation Code Signing CA - EVCS1</string>
+							<string>Entrust Code Signing Root Certification Authority - CSBR1</string>
 							<string>Entrust.net</string>
 						</array>
 					</dict>
@@ -157,6 +161,7 @@
 						<array>
 							<string>Dell Inc</string>
 							<string>Entrust Extended Validation Code Signing CA - EVCS1</string>
+							<string>Entrust Code Signing Root Certification Authority - CSBR1</string>
 							<string>Entrust.net</string>
 						</array>
 					</dict>
@@ -178,6 +183,7 @@
 						<array>
 							<string>Dell Inc</string>
 							<string>Entrust Extended Validation Code Signing CA - EVCS1</string>
+							<string>Entrust Code Signing Root Certification Authority - CSBR1</string>
 							<string>Entrust.net</string>
 						</array>
 					</dict>
