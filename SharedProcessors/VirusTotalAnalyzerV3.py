@@ -99,6 +99,7 @@ class VirusTotalAnalyzerV3(URLDownloader):
         "vt_reputation": {
             "description": "The reputation of the file according to Virus Total."
         },
+        "vt_version": {"description": "The file version as returned from Virus Total"},
         "vt_signature_product": {"description": "Returned from Virus Total"},
         "vt_signature_verified": {"description": "Returned from Virus Total"},
         "vt_signature_description": {"description": "Returned from Virus Total"},
@@ -111,7 +112,7 @@ class VirusTotalAnalyzerV3(URLDownloader):
         "vt_signature_valid_to": {"description": "Returned from Virus Total"},
         "vt_signature_serial_number": {"description": "Returned from Virus Total"},
         "vt_signature_cert_issuer": {"description": "Returned from Virus Total"},
-        "vt_signature_thumbprint": {"description": "Returned from Virus Total"},
+        "vt_signature_thumbprint": {"description": "Returned from Virus Total"}
     }
 
     __doc__ = description
@@ -424,6 +425,7 @@ class VirusTotalAnalyzerV3(URLDownloader):
             self.env["vt_type_description"] = data["attributes"]["type_description"]
             self.env["vt_creation_date"] = data["attributes"].get("creation_date") or ""
             self.env["vt_reputation"] = data["attributes"]["reputation"]
+            self.env["vt_version"] = signInfo.get("file version") or ""
 
             # Code signature verification
             allChecks = {}

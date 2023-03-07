@@ -64,28 +64,6 @@
 			<key>Arguments</key>
 			<dict>
 				<key>file_path</key>
-				<string>%RECIPE_CACHE_DIR%/PSProvider/DellBIOSProvider/DellBIOSProvider.dll</string>
-				<key>code_sign_verification_config</key>
-				<dict>
-					<key>code_signing_checks</key>
-					<dict>
-						<key>expected_authority_names</key>
-						<array>
-							<string>Dell Inc</string>
-							<string>Entrust Extended Validation Code Signing CA - EVCS2</string>
-							<string>Entrust Code Signing Root Certification Authority - CSBR1</string>
-							<string>Entrust.net</string>
-						</array>
-					</dict>
-				</dict>
-			</dict>
-		</dict>
-		<dict>
-			<key>Processor</key>
-			<string>com.github.iancohn.SharedProcessors/VirusTotalAnalyzerV3</string>
-			<key>Arguments</key>
-			<dict>
-				<key>file_path</key>
 				<string>%RECIPE_CACHE_DIR%/PSProvider/DellBIOSProvider/DSMBLibrary.dll</string>
 				<key>code_sign_verification_config</key>
 				<dict>
@@ -175,6 +153,29 @@
 			<dict>
 				<key>file_path</key>
 				<string>%RECIPE_CACHE_DIR%/PSProvider/DellBIOSProviderX86/BIOSIntf.dll</string>
+				<key>code_sign_verification_config</key>
+				<dict>
+					<key>code_signing_checks</key>
+					<dict>
+						<key>expected_authority_names</key>
+						<array>
+							<string>Dell Inc</string>
+							<string>Entrust Extended Validation Code Signing CA - EVCS2</string>
+							<string>Entrust Code Signing Root Certification Authority - CSBR1</string>
+							<string>Entrust.net</string>
+						</array>
+					</dict>
+				</dict>
+			</dict>
+		</dict>
+
+		<dict>
+			<key>Processor</key>
+			<string>com.github.iancohn.SharedProcessors/VirusTotalAnalyzerV3</string>
+			<key>Arguments</key>
+			<dict>
+				<key>file_path</key>
+				<string>%RECIPE_CACHE_DIR%/PSProvider/DellBIOSProvider/DellBIOSProvider.dll</string>
 				<key>code_sign_verification_config</key>
 				<dict>
 					<key>code_signing_checks</key>
