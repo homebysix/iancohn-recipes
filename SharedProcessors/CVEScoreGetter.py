@@ -144,8 +144,8 @@ class CVEScoreGetter(URLTextSearcher):
                 )
 
             self.output(
-                f"Maximum CVSS Score: {self.env["maximum_cve_score"]}\tRating: {self.env["maximum_cve_rating"]}",
-                verbose_level=1,
+                f'Maximum CVSS Score: {self.env["maximum_cve_score"]}\tRating: {self.env["maximum_cve_rating"]}',
+                verbose_level=1
             )
 
         except Exception as e:
