@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>Description</key>
-    <string>This recipe downloads EXAMPLE</string>
+    <string>This recipe downloads the latest FSLogix Apps archive from Microsoft.</string>
     <key>Identifier</key>
     <string>com.github.iancohn.download.FSLogix-Win</string>
     <key>Input</key>
