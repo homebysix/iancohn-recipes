@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Description</key>
+    <string>This recipe downloads EXAMPLE</string>
+    <key>Identifier</key>
+    <string>com.github.iancohn.download.FSLogix-Win</string>
+    <key>Input</key>
+    <dict>
+        <key>NAME</key>
+        <string>FSLogix</string>
+        <key>SEARCH_URL</key>
+        <string>https://learn.microsoft.com/en-us/fslogix/whats-new</string>
+        <key>SEARCH_PATTERN</key>
+        <string>https\:\/\/download\.microsoft\.com\/download\/.*\/FSLogix_Apps_[\d\.]{3,}\.zip</string>
+        <key>USER_AGENT</key>
+        <string>Mozilla/5.0 (Windows NT 6.3; Win64, x64; Trident/7.0; rv:11.0) like Gecko</string>
+    </dict>
+    <key>MinimumVersion</key>
+    <string>0.2.9</string>
+    <key>Process</key>
+    <array>
+        <dict>
+            <key>Processor</key>
+            <string>URLTextSearcher</string>
+            <key>Arguments</key>
+            <dict>
+                <key>url</key>
+                <string>%SEARCH_URL%</string>
+                <key>re_pattern</key>
+                <string>%SEARCH_PATTERN%</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>Processor</key>
+            <string>URLDownloader</string>
+            <key>Arguments</key>
+            <dict>
+                <key>url</key>
+                <string>%match%</string>
+                <key>request_headers</key>
+                <dict>
+                    <key>user-agent</key>
+                    <string>%USER_AGENT%</string>
+                </dict>
+            </dict>
+        </dict>
+        <dict>
+            <key>Processor</key>
+            <string>Unarchiver</string>
+            <key>Arguments</key>
+            <dict>
+                <key>purge_destination</key>
+                <true/>
+            </dict>
+        </dict>
+        <dict>
+            <key>Processor</key>
+            <string>com.github.hansen-m.SharedProcessors/WinInstallerExtractor</string>
+            <key>Arguments</key>
+            <dict>
+                <key>exe_path</key>
+                <string>%RECIPE_CACHE_DIR%/%NAME%//x64/Release/FSLogixAppsSetup.exe</string>
+                <key>extract_dir</key>
+                <string>ExeExtract</string>
+                <key>preserve_paths</key>
+                <string>False</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>Processor</key>
+            <string>com.github.hansen-m.SharedProcessors/BESRelevanceProvider</string>
+            <key>Arguments</key>
+            <dict>
+                <key>bes_filepath</key>
+                <string>%pathname%</string>
+                <key>output_var_name</key>
+                <string>version</string>
+                <key>bes_relevance</key>
+                <string>(it as trimmed string) of preceding texts of first "%22" of following texts of first "DisplayVersion=%22" of lines 2 of file "%RECIPE_CACHE_DIR%/ExeExtract/0"</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>Processor</key>
+            <string>StopProcessingIf</string>
+            <key>Arguments</key>
+            <dict>
+                <key>predicate</key>
+                <string>version == "" OR version == "None" </string>
+            </dict>
+        </dict>
+        <dict>
+            <key>Processor</key>
+            <string>EndOfCheckPhase</string>
+        </dict>
+    </array>
+</dict>
+</plist>
