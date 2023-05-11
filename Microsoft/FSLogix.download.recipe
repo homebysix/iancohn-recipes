@@ -61,7 +61,7 @@
             <key>Arguments</key>
             <dict>
                 <key>exe_path</key>
-                <string>%RECIPE_CACHE_DIR%/%NAME%//x64/Release/FSLogixAppsSetup.exe</string>
+                <string>%RECIPE_CACHE_DIR%/%NAME%/x64/Release/FSLogixAppsSetup.exe</string>
                 <key>extract_dir</key>
                 <string>ExeExtract</string>
                 <key>preserve_paths</key>
