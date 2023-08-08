@@ -3,12 +3,16 @@ Identifier: com.github.iancohn.download.VCRedistributable-Win
 MinimumVersion: 2.3.0
 Input:
   NAME: Visual C++ Redistributable
-  ARCH: 'x64'
   USER_AGENT: Mozilla/5.0 (Windows NT 6.3; Win64, x64; Trident/7.0; rv:11.0) like Gecko
 Process:
 - Processor: URLDownloader
   Arguments:
-    url: https://aka.ms/vs/17/release/vc_redist.%ARCH%.exe
+    url: https://aka.ms/vs/17/release/vc_redist.x86.exe
+    request_headers:
+      user-agent: "%USER_AGENT%"
+- Processor: URLDownloader
+  Arguments:
+    url: https://aka.ms/vs/17/release/vc_redist.x64.exe
     request_headers:
       user-agent: "%USER_AGENT%"
 - Processor: com.github.jgstew.SharedProcessors/FileExeGetInfoPE
