@@ -12,7 +12,8 @@ Process:
     url: https://aka.ms/vs/17/release/vc_redist.%ARCH%.exe
     request_headers:
       user-agent: "%USER_AGENT%"
-- Processor: com.github.hansen-m.SharedProcessors/HachoirMetaDataProvider3
+#- Processor: com.github.autopkg.jgstew.SharedProcessors/HachoirMetaDataProvider3
+- Processor: com.github.jgstew.SharedProcessors/FileExeGetInfoPE
 - Processor: StopProcessingIf
   Arguments:
     predicate: |
