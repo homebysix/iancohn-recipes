@@ -12,12 +12,14 @@ Process:
       user-agent: "%USER_AGENT%"
 - Processor: URLDownloader
   Arguments:
+    x86Path: "%pathname%"
     url: https://aka.ms/vs/17/release/vc_redist.x64.exe
     request_headers:
       user-agent: "%USER_AGENT%"
 - Processor: com.github.jgstew.SharedProcessors/FileExeGetInfoPE
 - Processor: StopProcessingIf
   Arguments:
+    x64Path: "%pathname%"
     predicate: |
       download_changed == FALSE
 - Processor: StopProcessingIf
