@@ -53,6 +53,17 @@
             <dict>
                 <key>purge_destination</key>
                 <true/>
+                <key>destination_path</key>
+                <string>%RECIPE_CACHE_DIR%/FSLogix</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>Processor</key>
+            <string>FileFinder</string>
+            <key>Arguments</key>
+            <dict>
+                <key>pattern</key>
+                <string>%destination_path%/*/x64/Release/*.exe</string>
             </dict>
         </dict>
         <dict>
@@ -61,7 +72,7 @@
             <key>Arguments</key>
             <dict>
                 <key>exe_path</key>
-                <string>%RECIPE_CACHE_DIR%/FSLogix/x64/Release/FSLogixAppsSetup.exe</string>
+                <string>%found_filename%</string>
                 <key>extract_dir</key>
                 <string>ExeExtract</string>
                 <key>preserve_paths</key>
@@ -74,7 +85,7 @@
             <key>Arguments</key>
             <dict>
                 <key>bes_filepath</key>
-                <string>%pathname%</string>
+                <string>%found_filename%</string>
                 <key>output_var_name</key>
                 <string>version</string>
                 <key>bes_relevance</key>
