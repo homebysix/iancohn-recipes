@@ -41,6 +41,10 @@
         </dict>
         <dict>
             <key>Processor</key>
+            <string>EndOfCheckPhase</string>
+        </dict>
+        <dict>
+            <key>Processor</key>
             <string>Unarchiver</string>
             <key>Arguments</key>
             <dict>
@@ -93,10 +97,6 @@
                 <key>predicate</key>
                 <string>version == "" OR version == "None" </string>
             </dict>
-        </dict>
-        <dict>
-            <key>Processor</key>
-            <string>EndOfCheckPhase</string>
         </dict>
     </array>
 </dict>
