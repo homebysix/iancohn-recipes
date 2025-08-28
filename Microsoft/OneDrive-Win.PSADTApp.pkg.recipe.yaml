@@ -1,0 +1,85 @@
+Description: Create a PSADT content repository folder for OneDrive
+Identifier: com.github.iancohn.pkg.PSADTApp.OneDrive-Win
+MinimumVersion: 2.3.0
+ParentRecipe: com.github.iancohn.download.OneDrive-Win
+
+Input:
+  NAME: "OneDrive" 
+  PSADT_TOOLKIT_VERSION: 4.1.3
+  PSADT_APP_ARCH: "x64" #| # Make this argument an empty string if not using.
+  PSADT_APP_VENDOR: "Microsoft Corporation" #| # Make this argument an empty string if not using.
+  PSADT_APP_NAME: "OneDrive" #| # Make this argument an empty string if not using.
+  PSADT_TEMPLATE_ZIP_PATH: "%RECIPE_DIR%/../../com.github.autopkg.iancohn-recipes/PsAppDeployToolkit/Templates/PSAppDeployToolkit_Template_v4.zip"
+  PSADT_INVOKE_SCRIPT_TEMPLATE_PATH: "%RECIPE_DIR%/../../com.github.autopkg.iancohn-recipes/PsAppDeployToolkit/Templates/Invoke-AppDeployToolkit.ps1"
+  PSADT_CUSTOM_PARAMETERS: "" #|
+#    [Parameter(Mandatory = $false)]
+#    [System.Management.Automation.SwitchParameter]$SampleParameter,
+  PSADT_CLOSE_APPS: "" #Example: @('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })
+  PSADT_SCRIPT_VERSION: '1.0.0'
+  PSADT_SCRIPT_DATE: '2025-05-01'
+  PSADT_SCRIPT_AUTHOR: 'AutoPkg'
+  PSADT_REQUIRE_ADMIN: '$true'
+  PSADT_PRE_INSTALL_TASKS:  | # Make this argument an empty string if not using.
+    $setupExePath = Join-Path $adtSession.DirFiles "OneDriveSetup.exe"
+  PSADT_INSTALL_TASKS: | # Make this argument an empty string if not using.
+    if (
+        (
+            (Get-ChildItem HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\) + 
+            (Get-ChildItem HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall)
+        ).Where({$_.GetValue('DisplayName') -like "Microsoft OneDrive*"}).Count -ge 1
+    ) {
+        Start-ADTProcess -FilePath $setupExePath -ArgumentList "/update","/allusers" -CreateNoWindow -WaitForMsiExec
+        Start-ADTProcess -FilePath "$env:SystemRoot\System32\cmd.exe" -ArgumentList "/C" -CreateNoWindow -WaitForMsiExec -IgnoreExitCodes 0
+        Close-ADTSession -ExitCode 3010
+    } else {
+        Start-ADTProcess -FilePath $setupExePath -ArgumentList "/silent","/allusers" -CreateNoWindow -WaitForMsiExec
+        Start-ADTProcess -FilePath "$env:SystemRoot\System32\cmd.exe" -ArgumentList "/C" -CreateNoWindow -WaitForMsiExec -IgnoreExitCodes 0
+    }
+  PSADT_POST_INSTALL_TASKS: "" #| # Make this argument an empty string if not using.
+#    Write-ADTLogEntry -Message "PostInstall Stuff"
+  PSADT_CUSTOM_INSTALL_COMPLETE_COMMAND: "" # If using this argument, end it with "`n        # ", otherwise set it to an empty string
+  PSADT_PRE_REPAIR_TASKS: "" #| # Make this argument an empty string if not using.
+#    Write-ADTLogEntry -Message "Pre-Install Stuff"
+  PSADT_REPAIR_TASKS: "" #| # Make this argument an empty string if not using.
+#    Write-ADTLogEntry -Message "Install Stuff"
+  PSADT_POST_REPAIR_TASKS: "" #| # Make this argument an empty string if not using.
+#    Write-ADTLogEntry -Message "PostInstall Stuff"
+  PSADT_CUSTOM_REPAIR_COMPLETE_COMMAND: "" # If using this argument, end it with "`n        # ", otherwise set it to an empty string
+  PSADT_PRE_UNINSTALL_TASKS: "" #| # Make this argument an empty string if not using.
+#    Write-ADTLogEntry -Message "Pre-Install Stuff"
+  PSADT_UNINSTALL_TASKS: "" #| # Make this argument an empty string if not using.
+#    Write-ADTLogEntry -Message "Install Stuff"
+  PSADT_POST_UNINSTALL_TASKS: "" #| # Make this argument an empty string if not using.
+#    Write-ADTLogEntry -Message "PostInstall Stuff"
+  PSADT_CUSTOM_UNINSTALL_COMPLETE_COMMAND: "" # If using this argument, end it with "`n        # ", otherwise set it to an empty string
+Process:
+- Processor: StopProcessingIf
+  Arguments:
+    x64Path: "%pathname%"
+    predicate: |
+      download_changed == FALSE
+- Processor: StopProcessingIf
+  Arguments:
+    predicate: |
+      download_changed == FALSE
+- Processor: StopProcessingIf
+  Arguments:
+    predicate: |
+      version == "" OR version == "None"
+- Processor: Unarchiver
+  Arguments:
+    archive_path: "%PSADT_TEMPLATE_ZIP_PATH%"
+    purge_destination: true
+- Processor: PathDeleter
+  Arguments:
+    path_list: 
+    - "%RECIPE_CACHE_DIR%/%NAME%/Invoke-AppDeployToolkit.ps1"
+    version: 1.4.4
+- Processor: com.github.scriptingosx.SharedProcessors/FileTemplate
+  Arguments:
+    template_path: "%PSADT_INVOKE_SCRIPT_TEMPLATE_PATH%"
+    destination_path: "%RECIPE_CACHE_DIR%/%NAME%/Invoke-AppDeployToolkit.ps1"
+- Processor: Copier
+  Arguments:
+    source_path: '%pathname%'
+    destination_path: "%RECIPE_CACHE_DIR%/%NAME%/Files"
