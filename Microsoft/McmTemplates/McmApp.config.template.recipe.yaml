@@ -7,6 +7,7 @@ Identifier: com.github.iancohn.template.config.McmApp
 MinimumVersion: 2.3.0
 Input:
 Process:
+- Processor: com.github.haircut.processors/DatetimeOutputter
 - Processor: com.github.iancohn.SharedProcessors/DictionaryFileCreator
   Arguments:
     output_file_path: "%RECIPE_CACHE_DIR%/%NAME%/SupportFiles/metadata.json"
@@ -39,7 +40,7 @@ Process:
       - DeploymentType:
         Technology: Script # Script, MSI, WindowsAppx
         DeploymentTypeName: (Install Software - PSADT) # Deploment Type names must be unique to each application. If the application and deployment type already exist, update the existing deployment type.
-        AdministratorComment: Created by AutoPkg %AUTOPKG_VERSION%
+        AdministratorComment: Created by AutoPkg %AUTOPKG_VERSION% on %datetime%
         ContentLocation: '\\Repo\Content'
         PersistContentInClientCache: False
         InstallationProgram: 'Invoke-AppDeployToolkit.ps1 -DeploymentType Install DeployMode Silent'
