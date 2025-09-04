@@ -82,6 +82,8 @@ Process:
   Arguments:
     source_path: '%pathname%'
     destination_path: "%RECIPE_CACHE_DIR%/%NAME%/Files"
+- Processor: com.github.iancohn.SharedProcessors/DictionaryFileCreator
+  Arguments:
     output_file_path: "%RECIPE_CACHE_DIR%/%NAME%/SupportFiles/metadata.json"
     dictionary:
       Name: App Name
