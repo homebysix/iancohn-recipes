@@ -13,6 +13,9 @@ Process:
     output_file_path: "%RECIPE_CACHE_DIR%/%NAME%/SupportFiles/metadata.json"
     dictionary:
       Name: App Name
+      BehaviorIfExists: Update # Replace, Update, Exit, AppendVersion, AppendIndex
+      SecurityScopeBehavior: Append # Append, Replace
+      CategoryBehavior: Replace # Append, Replace
       Description: A description of the app
       Owner: 
         - App owner 1
@@ -39,7 +42,8 @@ Process:
       DeploymentTypes:
       - DeploymentType:
         Technology: Script # Script, MSI, WindowsAppx
-        DeploymentTypeName: (Install Software - PSADT) # Deploment Type names must be unique to each application. If the application and deployment type already exist, update the existing deployment type.
+        DeploymentTypeName: (Install Software - PSADT) # Deploment Type names must be unique to each application.
+        BehaviorIfExists: Update # Replace, Update, Exit, AppendVersion, AppendIndex
         AdministratorComment: Created by AutoPkg %AUTOPKG_VERSION% on %datetime%
         ContentLocation: '\\Repo\Content'
         PersistContentInClientCache: False
@@ -48,7 +52,7 @@ Process:
         Force32BitInstaller: False
         UninstallProgram: 'Invoke-AppDeployToolkit.ps1 -DeploymentType Uninstall DeployMode Silent'
         UninstallStartIn: ''
-        InstallationProgramVisibility: Hidden # Noraml, Minimized, Maximized, Hidden
+        InstallationProgramVisibility: Hidden # Normal, Minimized, Maximized, Hidden
         LogonRequirementType: WhetherOrNotUserLoggedOn # OnlyWhenUserLoggedOn, WhereOrNotUserLoggedOn, WhetherOrNotUserLoggedOn, OnlyWhenNoUserLoggedOn
         InstallationBehaviorType: InstallForSystem # InstallForSystem, InstallForSystemIfResourceIsDeviceOtherwiseInstallForUser, InstallForUser
         RebootBehavior: BasedOnExitCode # BasedOnExitCode, NoAction, ProgramReboot, ForceReboot
@@ -80,19 +84,19 @@ Process:
           ReturnCode: 4000
           CodeType: Failure # Failure, Success, FastRetry, HardReboot, SoftReboot
           Description: "Catastrophic failure"
-        Detection:
-          Type: CustomScript # CustomScript, File, Directory, RegistryKey, RegistryKeyValue, WindowsInstaller, Group
-          Options:
-            ScriptType: PowerShell #Always PowerShell
-            ScriptContent: |
-              if (Get-Process "ccmexec*") {
-                Write-Output "Installed"
-              }
 #        Detection:
-#          Type: File # CustomScript, File, Directory, RegistryKey, RegistryKeyValue, WindowsInstaller, Group
+#          Type: CustomScript # CustomScript, File, Directory, RegistryKey, RegistryKeyValue, WindowsInstaller, Group
 #          Options:
-#            FileName: 'OneDrive.exe'
-#            Path: '%PROGRAMFILES%\Microsoft OneDrive'
-#            PropertyType: Version
-#            ExpressionOperator: GreaterEquals
-#            Value: '%version%'
+#            ScriptType: PowerShell #Always PowerShell
+#            ScriptContent: |
+#              if (Get-Process "ccmexec*") {
+#                Write-Output "Installed"
+#              }
+        Detection:
+          Type: File # CustomScript, File, Directory, RegistryKey, RegistryKeyValue, WindowsInstaller, Group
+          Options:
+            FileName: 'MyVendor-Program.exe'
+            Path: '%PROGRAMFILES%\MyVendor'
+            PropertyType: Version
+            ExpressionOperator: GreaterEquals
+            Value: '%version%'
