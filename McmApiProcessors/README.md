@@ -130,7 +130,7 @@ Positive or negative integers may be specified to select a specific index from t
 
 ### Examples
 
-- **``"existing_app_securityscopes": {"type": "property", "raise_error": False,"options": {"expression": "SecuredScopeNames"}}``**
+- **``"existing_app_securityscopes": {"type": "property", "raise_error": False,"options": {"property": "SecuredScopeNames"}}``**
   An autopkg variable named 'existing_app_securityscopes' will be created based on the 'SecuredScopeNames' property from the object returned. If no object is returned, or if the returned object does not contain a 'SecuredScopeNames' property, no error is raised and autopkg will continue the process.
 - **``"app_logical_name": {"type": "xpath", "raise_error": True,"options": {"select_value_index": '0', "strip_namespaces": False, "property": "SDMPackageXML", "expression": '/*[local-name()="AppMgmtDigest"]/*[local-name()="Application"]/@LogicalName'}}``**
   An autopkg variable named 'app_logical_name will be created by executing the xpath expression indicated against the 'SDMPackageXML' property of the returned object. If the property cannot be found an error will be raised.
