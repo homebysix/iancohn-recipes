@@ -2572,10 +2572,10 @@ class McmSDMPackageXMLGenerator(Processor):
                     infoUserCategories =  i.get('UserCategories', [])
                 else:
                     infoUserCategories = app.get('UserCategories', [])
-                iUserCategories = []
+                item_user_categories = []
                 for c in infoUserCategories:
-                    iUserCategories.append(user_categories[c])
-                if len(iUserCategories) > 0:
+                    item_user_categories.append(user_categories[c])
+                if len(item_user_categories) > 0:
                     item_info_params["user_categories_node"] = new_user_categories_node(user_category_unique_ids = user_categories)
                 if i.__contains__('Keyword'):
                     item_info_params["tags"] = i.get('Keyword')
