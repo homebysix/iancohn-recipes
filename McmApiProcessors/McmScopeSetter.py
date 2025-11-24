@@ -15,10 +15,40 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import platform
 import requests
+
+# to use a base/external module in AutoPkg we need to add this path to the sys.path.
+# this violates flake8 E402 (PEP8 imports) but is unavoidable, so the following
+# imports require noqa comments for E402
+import os.path
+import sys
+vendor_path = os.path.join(os.path.dirname(__file__),"vendor")
+if vendor_path not in sys.path:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__),"vendor"))
+
 import keyring
 from requests_ntlm import HttpNtlmAuth
+
 from autopkglib import Processor,ProcessorError
+
+def setup_credential():
+    system = platform.system()
+    if system == "Darwin":
+        try:
+            from keyring.backends import macOS
+            keyring.set_keyring(macOS.Keyring())
+        except ImportError as e:
+            raise e
+    elif system == "Windows":
+        try:
+            from keyring.backends import Windows
+            keyring.set_keyring(Windows.WinVaultKeyring())
+        except ImportError as e:
+            raise e
+
+setup_credential()
 
 __all__ = ["McmScopeSetter"]
 

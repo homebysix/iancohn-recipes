@@ -5,21 +5,25 @@ Some pointers on items which are obviously out of place or ugly or otherwise poo
 
 # Installation
 
-## Modules
+To connect to an MCM instance, you will need to create an MCM credential.
 
-```zsh
-/Library/AutoPkg/Python3/Python.framework/Versions/Current/bin/python3 -m pip install keyring
-/Library/AutoPkg/Python3/Python.framework/Versions/Current/bin/python3 -m pip install requests_ntlm
-/Library/AutoPkg/Python3/Python.framework/Versions/Current/bin/python3 -m pip install Pillow
-
-```
-
-After installing the above modules, you should also register an MCM credential in keychain. 'com.github.autopkg.iancohn-recipes.mcmapi' is not required for the -s parameter, however if specifying something custom, you'll need to note it and use it to populate the 'keychain_password_service' input variable in the processor(s) you are using manually.
+## macOS
+'com.github.autopkg.iancohn-recipes.mcmapi' is not required for the -s parameter, however if specifying something custom, you'll need to note it and use it to populate the 'keychain_password_service' input variable in the processor(s) you are using manually.
 
 ```zsh
 username = "username@domain.com"
 security add-generic-password -a $username -s com.github.autopkg.iancohn-recipes.mcmapi -T '/Library/AutoPkg/Python3/Python.framework/Versions/Current/bin/python3' -U -w
 ```
+
+## Windows
+
+```powershell
+$credential = Get-Credential
+$target = "com.github.autopkg.iancohn-recipes.mcmapi" # Or your preferred service name
+& cmdkey /generic:"$target" /user:"$($credential.UserName)" /pass:"$($credential.GetNetworkCredential().Password)"
+```
+
+> :information_source: **Important Note:** These processors have not yet been tested on Windows
 
 # Common Input Variables
 
