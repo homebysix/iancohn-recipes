@@ -25,9 +25,12 @@ import json
 # imports require noqa comments for E402
 import os.path
 import sys
-vendor_path = os.path.join(os.path.dirname(__file__),"vendor")
+
+platform_name = platform.system().lower()
+arch = platform.machine().lower()
+vendor_path = os.path.join(os.path.dirname(__file__),"vendor",platform_name,arch)
 if vendor_path not in sys.path:
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__),"vendor"))
+    sys.path.insert(0, vendor_path)
 
 import keyring
 from requests_ntlm import HttpNtlmAuth

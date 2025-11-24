@@ -26,11 +26,15 @@ from io import BytesIO
 # to use a base/external module in AutoPkg we need to add this path to the sys.path.
 # this violates flake8 E402 (PEP8 imports) but is unavoidable, so the following
 # imports require noqa comments for E402
+import platform
 import os.path
 import sys
-vendor_path = os.path.join(os.path.dirname(__file__),"vendor")
+
+platform_name = platform.system().lower()
+arch = platform.machine().lower()
+vendor_path = os.path.join(os.path.dirname(__file__),"vendor",platform_name,arch)
 if vendor_path not in sys.path:
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__),"vendor"))
+    sys.path.insert(0, vendor_path)
 
 import keyring
 from requests_ntlm import HttpNtlmAuth
