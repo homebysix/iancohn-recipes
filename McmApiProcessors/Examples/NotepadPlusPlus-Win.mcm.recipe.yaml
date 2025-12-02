@@ -12,7 +12,7 @@ Process:
   - Processor: EndOfCheckPhase
   - Processor: com.github.iancohn.mcm-api.processors/McmAppGetter
     Arguments:
-      keychain_password_username: user1@company,com
+      keychain_password_username: user1@company.com
       mcm_site_server_fqdn: mcm-mp.company.com
       application_name: Notepad++ - %version%
       export_properties:
