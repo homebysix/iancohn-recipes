@@ -1616,7 +1616,7 @@ class McmSDMPackageXMLGenerator(Processor):
         if len(appValue) == 1 and (sdm_package_xml :=  appValue[0].get('SDMPackageXML', '')) !=  '':
             self.output(f"SDMPackageXML length: {len(sdm_package_xml)}")
             return_object = {
-                "SDMPackageXML": sdm_package_xml.replace('<?xml version = "1.0" encoding = "utf-16"?>', '', 1), 
+                "SDMPackageXML": sdm_package_xml.replace('<?xml version="1.0" encoding="utf-16"?>', '', 1), 
                 "ci_id": appValue[0].get("CI_ID")
             }
         else:
@@ -1748,75 +1748,115 @@ class McmSDMPackageXMLGenerator(Processor):
             self.output(f"User Category UniqueID: {uq_id}", 3)
             return uq_id
 
-    def merge_deployment_types(self, authoring_scope_id: str, dicts: list[dict] = [], existing_deployment_types: list[XmlNodeAsDict] = [], persist_unhandled_deployment_types:bool = False) -> list:
+    def merge_deployment_types(self, authoring_scope_id: str, dicts: list[dict] = [],
+                               existing_deployment_types: list[XmlNodeAsDict] = [],
+                               persist_unhandled_deployment_types:bool = False) -> list:
         """Match configured deployment types to existing deployment
         types and return an ordered list of deployment types to add to
         an application
         """
-        try:
-            self.output("Attempting to merge configured deployment types with those from an existing application.", 2)
-            element_lookup = {d.find_children_by_name(node_name = 'Title')[0].get('NodeInnerText'): d for d in existing_deployment_types}
-            result = []
-            used_titles = set()
-            unreferenced = []
-            for ix, item in enumerate(dicts):
-                dt_name = item.get('Options', {}).get('DeploymentTypeName', '')
-                if dt_name == '':
-                    raise ProcessorError("Each deployment type must contain a valid name.")
-                priority = item.get('Priority')
-                self.output(f"Getting existing_match for {dt_name} ({priority})", 3)
-                existing_match = element_lookup.get(dt_name)
-                if existing_match is None:
-                    self.output(f"No existing match found for {dt_name}", 3)
-                else:
-                    self.output(f"Found a match for {dt_name}", 2)
-                dt_logical_name = existing_match.get_attribute_value(attribute_name = 'LogicalName') if existing_match is not None else McmIdentifier().get_logical_name(object_type_name = 'DeploymentType')
-                dt_revision = (int(existing_match.get_attribute_value(attribute_name = 'Version'))) if existing_match is not None else 0
-                dt_next_revision = dt_revision + 1
-                used_titles.add(dt_name)
-                if priority is None and existing_match is not None:
-                    priority = ix + 1
-                result.append({"Type":"dict", "Priority":priority, "Object":item, "LogicalName":dt_logical_name, "Version":dt_next_revision})
-            if persist_unhandled_deployment_types:
-                self.output("Unhandled deployment types will be persisted", 3)
-                for element in existing_deployment_types:
-                    self.output("Begin parsing deployment type", 3)
-                    dt_name = element.find_children_by_name(node_name = 'Title')[0]['NodeInnerText']
-                    dt_revision = int(element.get_attribute_value("Version"))
-                    dt_logical_name = element.get_attribute_value('LogicalName')
-                    self.output(f"Deployment Type: {dt_name}({dt_logical_name}): {dt_revision}", 3)
-                    if dt_name not in used_titles:
-                        self.output(f"{dt_name} will be inserted into the existing application", 3)
-                        unreferenced.append(
-                            {
-                                "Type":"XmlNodeAsDict", 
-                                "Object":element, 
-                                "LogicalName":dt_logical_name, 
-                                "Version": dt_revision
-                            }
-                        )
+        self.output("Attempting to merge configured deployment types with those from an existing application", 2)
+        lookup_existing_by_name = {d.find_children_by_name(node_name = 'Title')[0].get('NodeInnerText'): d for d in existing_deployment_types}
+        used_names = set()
+        count_all = len(dicts or []) + len(existing_deployment_types or [])
+        self.output(f"{count_all} deployment type objects", 3)
+        priorities_range = list(range(1, (count_all + 1)))
+        self.output(f"Priorities {priorities_range[0]} through {priorities_range[-1]} may be used", 3)
+        used_priorities = []
+        merged = {}
+        dicts.reverse()
+        for item in dicts:
+            dt_name = item.get('Options', {}).get('DeploymentTypeName', '')
+            self.output(f"Processing {dt_name}", 3)
+            if used_names.__contains__(dt_name):
+                raise ProcessorError("Each Deployment Type Name can only be used once")
+            self.output(f"Matching deployment type configuration to any existing one.", 3)
+            existing_dt = lookup_existing_by_name.get(dt_name)
+            dt_logical_name = existing_dt.get_attribute_value(attribute_name = 'LogicalName') if existing_dt is not None else McmIdentifier().get_logical_name(object_type_name = 'DeploymentType')
+            dt_revision = (int(existing_dt.get_attribute_value(attribute_name = 'Version'))) if existing_dt is not None else 0
+            dt_next_revision = dt_revision + 1
+            if existing_dt is not None:
+                self.output(f"Got details from existing deployment type", 3)
+                behavior_if_exists = item.get('Options',{}).get('BehaviorIfExists', 'Exit')
+                if behavior_if_exists == 'Exit':
+                    self.output(f"An existing deployment type with this name was found and BehaviorIfExists was set to 'Exit'", 3)
+                    exit()
+                elif behavior_if_exists == 'Skip':
+                    continue
+                elif behavior_if_exists == 'Update':
+                    preferred_priority = item.get('Priority') or (existing_deployment_types.index(existing_dt) + 1)
+                    self.output(f"The existing deployment type will be updated with new information", 3)
+                elif behavior_if_exists == 'AppendIndex':
+                    self.output(f"Appending an index to the deployment type name", 3)
+                    index = 1
+                    done_with_name = False
+                    while done_with_name == False and index < 20:
+                        search_name = f"{item.get('DeploymentTypeName')} ({index.__str__()})"
+                        result = lookup_existing_by_name.get(search_name)
+                        if result is None:
+                            self.output(f"Appending an index ({index.__str__()}) to the deployment type name.", 3)
+                            dt_name = search_name
+                            done_with_name = True
+                        index +=  1
+                        if index == 20:
+                            self.output("Wow... There are 20 similarly named deployment types. You should probably look at this.", 3)
+                            break
+                        else:
+                            continue
+                    if done_with_name == False:
+                        raise ProcessorError("Could not find a name that was not already taken.")
+                    preferred_priority = item.get('Priority') or priorities_range[-1]
+                elif behavior_if_exists == 'AppendVersion':
+                    self.output(f"Appending the version to deployment type", 3)
+                    search_name = f"{item.get('DeploymentTypeName')} {self.software_version}"
+                    self.output(f"Checking to see if an app with the version appended exists ({search_name}).", 3)
+                    result = lookup_existing_by_name(search_name)
+                    if result is None:
+                        self.output("Appending the version to the application name.", 3)
+                        dt_name = search_name
                     else:
-                        self.output(f"{dt_name} already exists. Skipping it.")
+                        raise ProcessorError(f"An application already exists which already includes the version in the title. ({search_name})")
+                    preferred_priority = item.get('Priority') or priorities_range[-1]
             else:
-                self.output("Unhandled deployment types will not be persisted.", 3)
-            self.output("Ordering deployment types.", 3)
-            ordered = sorted([r for r in result if r["Priority"] is not None], 
-                            key = lambda x: x["Priority"])
-            unordered = [r for r in result if r["Priority"] is None]
-            final = []
-            next_priority = 1
-            u_ix = 0
-            for r in ordered:
-                while u_ix < len(unreferenced) and next_priority < r["Priority"]:
-                    final.append({**unreferenced[u_ix], "Priority": next_priority})
-                    next_priority +=  1
-            for rem in unreferenced[u_ix:] + unordered:
-                final.append({**rem, "Priority": next_priority})
-                next_priority +=  1
-            self.output("Finished ordering deployment types", 3)
-            return final
-        except Exception as e:
-            raise ProcessorError(e)
+                self.output("This appears to be a new deployment type.", 3)
+                preferred_priority = item.get('Priority') or priorities_range[-1]
+            self.output(f"Deployment Type with this name has not yet been configured", 3)
+            used_priorities.append(preferred_priority)
+            priorities_range.remove(preferred_priority)
+            used_names.add(dt_name)
+            item["DeploymentTypeName"] = dt_name
+            self.output(f"Setting priority {preferred_priority}", 3)
+            merged[str(preferred_priority)] = {
+                "Type": "dict",
+                "Object": item,
+                "LogicalName": dt_logical_name,
+                "Version": dt_next_revision
+            }
+            self.output(f"Done with {dt_name}", 3)
+        if persist_unhandled_deployment_types:
+            self.output("Unhandled deployment types will be persisted", 3)
+            for e in existing_deployment_types:
+                dt_name = e.find_children_by_name(node_name = 'Title')[0]['NodeInnerText']
+                self.output(f"Checking if deployment type name '{dt_name}' has been used", 3)
+                if used_names.__contains__(dt_name) == False:
+                    dt_revision = int(e.get_attribute_value("Version"))
+                    dt_logical_name = e.get_attribute_value('LogicalName')
+                    preferred_priority = priorities_range[0]
+                    priorities_range.remove(preferred_priority)
+                    used_priorities.append(preferred_priority)
+                    used_names.add(dt_name)
+                    self.output(f"Setting priority {preferred_priority}", 3)
+                    merged[str(preferred_priority)] = {
+                        "Type": "XmlNodeAsDict",
+                        "Object": e,
+                        "LogicalName": dt_logical_name,
+                        "Version": dt_revision
+                    }
+        self.output(f"Sorting {len(merged)} deployment type configurations", 3)
+        sorted_merged = []
+        for p in sorted(merged):
+            sorted_merged.append(merged[p])
+        return sorted_merged
 
     def add_install_action(self, installer_root: XmlNodeAsDict, deployment_type_configuration:dict) -> None:
         """Parse the details of the deployment type dict and
@@ -2227,6 +2267,7 @@ class McmSDMPackageXMLGenerator(Processor):
             installer_root.append_child_node([XmlNodeAsDict(NodeName = 'RequiresLogOn', NodeInnerText = 'true')])
         elif deployment_type_configuration.get('LogonRequirementType', '') == 'OnlyWhenNoUserLoggedOn':
             installer_root.append_child_node([XmlNodeAsDict(NodeName = 'RequiresLogOn', NodeInnerText = 'false')])
+        self.output("Examining content", 3)
         content_path = deployment_type_configuration.get('Options', {}).get('ContentLocation')
         local_content_path = deployment_type_configuration.get('Options', {}).get('ContentLocation_Local')
         content_nodes = []
@@ -2239,8 +2280,12 @@ class McmSDMPackageXMLGenerator(Processor):
                 "fast_network_action": ContentHandlingMode(deployment_type_configuration.get('Options', {}).get('OnFastNetwork', 'Download')), 
                 "slow_network_action": ContentHandlingMode(deployment_type_configuration.get('Options', {}).get('OnSlowNetwork', 'Download'))
             }
-        content_nodes.append(new_content_importer(**content_params))
+            content_nodes.append(new_content_importer(**content_params))
+        else:
+            self.output("No install content", 2)
+        
         uninstall_setting = deployment_type_configuration.get('Options', {}).get('UninstallSetting') or 'NoneRequired'
+        self.output("Examining any uninstall content", 3)
         if uninstall_setting == 'Different':
             content_params = {
                 "content_location": deployment_type_configuration.get('Options', {}).get('UninstallContentLocation', None), 
@@ -2249,8 +2294,10 @@ class McmSDMPackageXMLGenerator(Processor):
                 "fast_network_action": ContentHandlingMode(deployment_type_configuration.get('Options', {}).get('OnFastNetwork', 'Download')), 
                 "slow_network_action": ContentHandlingMode(deployment_type_configuration.get('Options', {}).get('OnSlowNetwork', 'Download'))
             }
-            self.output('Adding uninstall content', 3)
+            self.output('Adding uninstall content', 2)
             content_nodes.append(new_content_importer(**content_params))
+        else:
+            self.output("No specific uninstall content", 2)
         self.output('Appending collected content nodes', 3)
         installer_root.append_child_node([XmlNodeAsDict(NodeName = 'Contents', ChildNodes = content_nodes)])
         self.output('Creating detection nodes', 3)
@@ -2365,6 +2412,7 @@ class McmSDMPackageXMLGenerator(Processor):
         self.output("Adding installer node", 3)
         installer_node = self.new_installer_node(authoring_scope_id = authoring_scope_id, application_id = application_id, 
                 logical_name = logical_name, version = version, deployment_type_configuration = deployment_type_configuration)
+        self.output("Created installer node.", 3)
         child_nodes.append(installer_node)
         node.append_child_node(child_nodes)
         return node
@@ -2397,10 +2445,12 @@ class McmSDMPackageXMLGenerator(Processor):
             # Define namespaces
             appNs = get_nsmap('AppMgmtDigest')
             self.nsmap = appNs['nsmap']
-            
             self.authoring_scope = self.get_mcm_scope_id()
+
             # Search for existing app
             app = self.env.get('mcm_application_configuration')
+            version = app.get('SoftwareVersion')
+            self.software_version = version
             behavior_if_app_exists = app.get('BehaviorIfExists', 'Exit')
             existing_app_ci_id = self.env.get('existing_app_ci_id') or 0
             self.output(f"Existing CI_ID: {existing_app_ci_id}", 3)
@@ -2408,7 +2458,9 @@ class McmSDMPackageXMLGenerator(Processor):
             self.output(f"Existing SDMPackageXML Length: {len(existing_app_sdmpackagexml)}", 3)
             if existing_app_sdmpackagexml !=  '' and existing_app_ci_id > 0:
                 self.output("An existing application with this name was located.", 2)
-                existing_app = XmlNodeAsDict.from_xml_string_with_tracking(xml_string = existing_app_sdmpackagexml.replace('<?xml version = "1.0" encoding = "utf-16"?>', '', 1))
+                existing_app = XmlNodeAsDict.from_xml_string_with_tracking(
+                    xml_string = existing_app_sdmpackagexml.replace('<?xml version="1.0" encoding="utf-16"?>', '', 1).replace("<?xml version='1.0' encoding='utf-16'?>", '', 1)
+                    )
             else:
                 self.output(f"Existing app does not exist.", 3)
                 existing_app = None
@@ -2476,6 +2528,11 @@ class McmSDMPackageXMLGenerator(Processor):
             self.output('Done examining deployment types.', 3)
             dt_list = []
             for dt in merged:
+                self.output("Processing deployment type.", 3)
+                self.output(f"TYPE: {type(dt).__name__}",4)
+                if type(dt).__name__ == 'str':
+                    self.output(f"{dt}", 4)
+                self.output(f"DT KEYS: {', '.join(list(dt.keys()))}", 4)
                 if dt["Type"] == 'element':
                     dt_list.append(XmlNodeAsDict.convert_element_to_dict(dt['Object'], namespace_mode = 'PersistAsAttribute', parent_namespace = existing_app.nsmap, is_root = False))
                 elif dt["Type"] == "XmlNodeAsDict":
@@ -2550,7 +2607,6 @@ class McmSDMPackageXMLGenerator(Processor):
             default_user_documentation = app.get('UserDocumentation', None)
             publisher = app.get('Publisher')
             default_info_params['publisher'] = publisher
-            version = app.get('SoftwareVersion')
             default_info_params['software_version'] = version
             release_date = app.get('ReleaseDate', None)
             if release_date is not None:
