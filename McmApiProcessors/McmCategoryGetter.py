@@ -25,50 +25,61 @@ import sys
 # imports require noqa comments for E402
 sys.path.insert(0, os.path.dirname(__file__))
 
-from McmApiLib.McmApplicationUploaderBase import (  # pylint: disable=import-error, wrong-import-position
-    McmApplicationUploaderBase,
+from McmApiLib.McmCategoryGetterBase import (  # pylint: disable=import-error, wrong-import-position
+    McmCategoryGetterBase,
 )
 
-__all__ = ["McmApplicationUploader"]
+__all__ = ["McmCategoryGetter"]
 
-class McmApplicationUploader(McmApplicationUploaderBase):
-    description = """AutoPkg Processor to connect to an MCM Admin
-    Service and upload an application object, if it exists
-    """
+class McmCategoryGetter(McmCategoryGetterBase):
+    description = "Generate an SDMPackageXML string which represents an MCM Application object."
+    
+    __doc__ = description
+
     input_variables = {
         "keychain_password_service": {
-            "required": False,
-            "description": "The service name used to store the password. Defaults to com.github.autopkg.iancohn-recipes.mcmapi",
+            "required": False, 
+            "description": "The service name used to store the password. Defaults to com.github.autopkg.iancohn-recipes.mcmapi", 
             "default": 'com.github.autopkg.iancohn-recipes.mcmapi'
-        },
+        }, 
         "keychain_password_username": {
-            "required": False,
+            "required": False, 
             "description": "The username of the credential to retrieve. Defaults to %MCMAPI_USERNAME%"
-        },
+        }, 
         "mcm_site_server_fqdn": {
-            "required": True,
+            "required": True, 
             "description": "The FQDN of the site server. Ex. mcm.domain.com"
         },
-        "mcm_application_ci_id": {
-            "required": False,
-            "description": "The CI_ID to post the application to. If not specified, or if '0', a new application will be created.",
-            "default": 0
-        },
-        "mcm_application_sdmpackagexml": {
+        "category_name": {
             "required": True,
-            "description": "The SDMPackageXML to upload to the MCM site."
+            "description": "The name of the category for which to retrieve information"
         },
-        "mcm_app_uploader_export_properties": {
+        "category_type": {
+            "required": False,
+            "description": "The type name of the given category.",
+            "options": [
+                "AppCategories","CatalogCategories","Company","Device",
+                "GlobalCondition","Locale","MAMPolicy","Platform",
+                "PolicyAuthority","Product","ProductFamily",
+                "SettingsAndPolicy","SettingsAndPolicyFeatures",
+                "UpdateClassification","User","UserCategories",
+                "WeaveExtension"],
+            "default": "CatalogCategories"
+        },
+        "create_nonexistant_category": {
+            "required": False,
+            "default": False,
+            "description": "If True, McmCategoryGetter will create the category if it does not exist. (Not yet supported)"
+        },
+        "mcm_category_getter_export_properties": {
             "required": False,
             "default": {
-                "app_ci_id": {"type": "property", "raise_error": False,"options": {"property": "CI_ID"}},
-                "app_model_name": {"type": "property", "raise_error": True,"options": {"property": "ModelName"}},
-                "object_class": {"type": "property", "raise_error": True,"options": {"property": "__CLASS"}},
-                "current_object_path": {"type":"property", "raise_error": False, "options": {"property": "ObjectPath"}},
-                "app_securityscopes": {"type": "property", "raise_error": False,"options": {"property": "SecuredScopeNames"}},
-                "app_is_deployed": {"type": "property", "raise_error": True, "options": {"property": "IsDeployed"}},
-                "app_logical_name": {"type": "xpath", "raise_error": True,"options": {"select_value_index": '0', "strip_namespaces": False, "property": "SDMPackageXML", "expression": '/*[local-name()="AppMgmtDigest"]/*[local-name()="Application"]/@LogicalName'}},
-                "app_content_locations": {"type": "xpath", "raise_error": False,"options": {"select_value_index": '*', "strip_namespaces": True, "property": "SDMPackageXML", "expression": '//Content/Location/text()'}}
+                "category_instance_unique_id": {"type": "property", "raise_error": True,"options": {"property": "CategoryInstance_UniqueID"}},
+                "category_instance_id": {"type": "property", "raise_error": True,"options": {"property": "CategoryInstanceID"}},
+                "category_type_name": {"type": "property", "raise_error": True,"options": {"property": "CategoryTypeName"}},
+                "category_localized_name": {"type": "property", "raise_error": True,"options": {"property": "LocalizedCategoryInstanceName"}},
+                "category_locale_id": {"type": "property", "raise_error": False,"options": {"property": "LocalizedPropertyLocaleID"}},
+                "parent_category_instance_id": {"type": "property", "raise_error": False,"options": {"property": "ParentCategoryInstanceID"}},
             },
             "description": 
                 "A dictionary specifying the properties to retrieve, and the AutoPkg variables to use to store the output. "
@@ -83,14 +94,17 @@ class McmApplicationUploader(McmApplicationUploaderBase):
                 "Positive or negative integers may be specified to select a specific index from the result set (0-based). Negative integers count from the end of the result set (-1 is the last item))."
         }
     }
-    output_variables = {}
-    
-    __doc__ = description
-    
+    output_variables = {
+        "SDMPackageXML": {"description": "Serialized XML string representing an application object."}, 
+        "mcm_scope_id": {"description": "The authoring scope id for objects in the target MCM site."}, 
+        "mcm_application": {"description": "A dictionary representation of the mcm application"}, 
+        "mcm_application_ci_id": {"description": "The CI_ID where the application should be posted. 0 indicates a new application."}, 
+    }
+
     def main(self):
         """Run the execute function"""
         self.execute()
     
 if __name__ == "__main__":
-    PROCESSOR = McmApplicationUploader()
+    PROCESSOR = McmCategoryGetter()
     PROCESSOR.execute_shell()

@@ -1,4 +1,5 @@
 #!/usr/local/autopkg/python
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # Copyright 2025 Ian Cohn
@@ -11,50 +12,26 @@
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS, 
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import platform
-import requests
-from lxml import etree
-
-# to use a base/external module in AutoPkg we need to add this path to the sys.path.
-# this violates flake8 E402 (PEP8 imports) but is unavoidable, so the following
-# imports require noqa comments for E402
 import os.path
 import sys
-platform_name = platform.system().lower()
-arch = platform.machine().lower()
-vendor_path = os.path.join(os.path.dirname(__file__),"vendor",platform_name,arch)
-if vendor_path not in sys.path:
-    sys.path.insert(0, vendor_path)
-import keyring
-from requests_ntlm import HttpNtlmAuth
 
-from autopkglib import Processor, ProcessorError
+# to use a base module in AutoPkg we need to add this path to the sys.path.
+# this violates flake8 E402 (PEP8 imports) but is unavoidable, so the following
+# imports require noqa comments for E402
+sys.path.insert(0, os.path.dirname(__file__))
 
-def setup_credential():
-    system = platform.system()
-    if system == "Darwin":
-        try:
-            from keyring.backends import macOS
-            keyring.set_keyring(macOS.Keyring())
-        except ImportError as e:
-            raise e
-    elif system == "Windows":
-        try:
-            from keyring.backends import Windows
-            keyring.set_keyring(Windows.WinVaultKeyring())
-        except ImportError as e:
-            raise e
-
-setup_credential()
+from McmApiLib.McmAppGetterBase import (  # pylint: disable=import-error, wrong-import-position
+    McmAppGetterBase,
+)
 
 __all__ = ["McmAppGetter"]
 
-class McmAppGetter(Processor):
+class McmAppGetter(McmAppGetterBase):
     description = """AutoPkg Processor to connect to an MCM Admin
     Service and retrieve an application object, if it exists
     """
@@ -99,316 +76,18 @@ class McmAppGetter(Processor):
     output_variables = {
         "mcm_scope_id": {
             "description": "The scope id returned from the site."
+        },
+        "mcm_application_found": {
+            "description": "Returns True if the application was found in the MCM instance, otherwise, returns false."
         }
     }
     
     __doc__ = description
-
-    def convert_site_id_to_scope_id(self, site_id: str) -> str:
-        """Convert a SiteID string to a scope id"""
-        site_id_guid = site_id.replace('{','').replace('}','')
-        scope_id = f"ScopeId_{site_id_guid}"
-        return scope_id
-
-    def get_mcm_ntlm_auth(
-            self, keychain_service_name: str, keychain_username: str
-            ) -> HttpNtlmAuth:
-        """Get the credential from keychain using the supplied
-        parameters and return an HttpNtlmAuth object from the retrieved
-        details
-        """
-        password = keyring.get_password(
-            keychain_service_name,keychain_username
-            )
-        return HttpNtlmAuth(keychain_username,password)
-
-    def strip_namespaces(element):
-        """Remove all namespaces from an XML element for easier XPath
-        query support
-        """
-        for e in element.iter():
-            if e.tag is not etree.Comment:
-                e.tag = etree.QName(e).localname
-        etree.cleanup_namespaces(element)
-        return element
-
+    
     def main(self):
-        """McmAppGetter Main Method"""
-
-        try:
-            self.output("Generating headers.",3)
-            headers = {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            }
-            self.output("Checking supplied parameters",3)
-            keychain_service_name = self.env.get(
-                "keychain_password_service",
-                self.input_variables["keychain_password_service"]["default"]
-                )
-            keychain_username = self.env.get(
-                "keychain_password_username",
-                self.env.get("MCMAPI_USERNAME",'')
-                )
-            fqdn = self.env.get("mcm_site_server_fqdn", '')
-
-            if (fqdn == None or fqdn == ''):
-                raise ProcessorError("mcm_site_server_fqdn cannot be blank")
-
-            if (keychain_service_name == None or keychain_username == ''):
-                raise ProcessorError(
-                    "keychain_password_service cannot be blank"
-                    )
-
-            if (keychain_username == None or keychain_username == ''):
-                raise ProcessorError(
-                    "keychain_password_username cannot be blank"
-                    )
-
-            self.output(f"Attempting to get SiteInfo from {fqdn}",2)
-            url = (
-                f"https://{fqdn}/AdminService"
-                "/wmi/SMS_Identification.GetSiteID"
-            )
-            ntlm = self.get_mcm_ntlm_auth(
-                keychain_service_name = keychain_service_name,
-                keychain_username = keychain_username
-                )
-            site_info_response = requests.request(
-                method = 'GET',
-                url = url,
-                auth = ntlm,
-                headers = headers,
-                verify = False
-            )
-            site_info_json = site_info_response.json()
-            site_id = site_info_json.get('SiteID')
-            self.output(
-                f"Converting {site_id} to scope id and setting it as "
-                "mcm_scope_id",
-                2
-                )
-            self.env["mcm_scope_id"] = self.convert_site_id_to_scope_id(
-                site_id=site_id
-                )
-            application_name = self.env.get("application_name")
-            self.output(
-                f"Attempting to get application ({application_name}) "
-                f"from {fqdn}",
-                2
-                )
-            url = f"https://{fqdn}/AdminService/wmi/SMS_Application"
-            body = {
-                "$filter": (
-                    f"LocalizedDisplayName eq '{application_name}' "
-                    "and IsLatest eq true"
-                    ),
-                '$select': "CI_ID"}
-            self.output(f"Body: {body}", 3)
-            app_search_response = requests.request(
-                method = 'GET',
-                url=url,
-                auth=ntlm,
-                headers=headers,
-                verify=False,
-                params=body
-            )
-            self.output(
-                (
-                    "Done searching for application. "
-                    f"{type(app_search_response).__name__} type object returned."
-                ),
-                3,
-            )
-
-            app_search_json = app_search_response.json()
-            app_search_value = app_search_json.get('value',[])
-            if len(app_search_value) == 0:
-                self.output('Application not found.', 2)
-                return
-            self.output(f"Getting app with ci_id: {app_search_value[0].get('CI_ID')}", 3)
-            if len(app_search_value) == 1:
-                appUrl = (
-                    f"https://{fqdn}/AdminService/wmi/"
-                    f"SMS_Application({app_search_value[0].get('CI_ID')})"
-                )
-                app = requests.request(
-                    method='GET',
-                    url=appUrl,
-                    auth=ntlm,
-                    headers=headers,
-                    verify=False,
-                    timeout=(2,5)
-                )
-            if len(app_search_value) > 1:
-                raise ProcessorError(
-                    "Non-unique application object was returned from MCM"
-                    )
-            elif len(app_search_value) == 0:
-                self.output(
-                    "No application was returned. "
-                    "Specified export properties will be populated with "
-                    "null/empty values."
-                    )
-            if app.status_code != 200:
-                raise ProcessorError(
-                    f"An error was encountered whilst "
-                    "retrieving an application with CI_ID: "
-                    f"{app_search_value[0].get('CI_ID')}"
-                    )
-            app_value = app.json()['value'][0]
-            export_properties: dict = self.env.get(
-                'mcm_app_getter_export_properties',
-                self.input_variables['mcm_app_getter_export_properties']['default']
-                )
-            self.output("Setting the value of specified export properties",2)
-            for k in list(export_properties.keys()):
-                k_type = export_properties.get(k,{}).get('type','TypeNotFound')
-                self.output(
-                    (f"Getting export property '{k}' from a {k_type} "
-                    "expression"),
-                    3
-                    )
-                eval_property = export_properties[k]['options']['property']
-                if export_properties[k]["type"] == 'property':
-                    if not app_value.__contains__(
-                        eval_property
-                        ) and export_properties[k].get(
-                            'raise_error',False
-                            ) == True:
-                        raise ProcessorError(f"Property {export_properties[k]['options']['expression']} does not exist on the retrieved object. Valid properties are: {', '.join(list(app_value.keys()))}")
-                    value = app_value.get(eval_property, None)
-                elif export_properties[k]["type"] == 'xpath':
-                    if not app_value.__contains__(
-                        eval_property
-                        ) and export_properties[k].get(
-                            'raise_error',False
-                            ) == True:
-                        raise ProcessorError(
-                            f"Property {eval_property} "
-                            "does not exist on the retrieved object."
-                            )
-                    elif not app_value.__contains__(eval_property):
-                        value = None
-                    else:
-                        try:
-                            xml_element = etree.XML(
-                                app_value.get(eval_property,'').replace(
-                                    (
-                                        '<?xml version="1.0" encoding="'
-                                        'utf-16"?>'
-                                        ),
-                                    '',
-                                    1).replace(
-                                        (
-                                            "<?xml version='1.0' "
-                                            "encoding='utf-16'?>"
-                                        ),
-                                        '',
-                                        1
-                                        )
-                                    )
-                            if export_properties[k]['options'].get(
-                                'strip_namespaces',
-                                False
-                                ) == True:
-                                self.output(
-                                    "Stripping namespaces from XML element "
-                                    "before evaluating xpath expression",
-                                    3
-                                    )
-                                xml_element = McmAppGetter.strip_namespaces(
-                                    xml_element
-                                    )
-                            xml_xpath_expr = export_properties[k]\
-                                ['options']['expression']
-                            results = xml_element.xpath(xml_xpath_expr)
-                            self.output(
-                                "Got results from xpath expression",
-                                3
-                                )
-                            if len(results) == 0:
-                                if export_properties[k].get(
-                                        'raise_error', False) == True:
-                                    self.output(
-                                        "XPath expression returned no "
-                                        "results, and raise_error was set "
-                                        "to True",
-                                        3
-                                        )
-                                    raise ProcessorError(
-                                        "XPath expression "
-                                        f"{xml_xpath_expr} "
-                                        f"on property {eval_property} "
-                                        "returned no results.")
-                                else:
-                                    self.output(
-                                        "XPath expression returned no "
-                                        "results, and raise_error was set "
-                                        "to False",
-                                        3
-                                        )
-                                    value = None
-                            else:
-                                select_value_index = str(
-                                    export_properties[k]['options'].get(
-                                        'select_value_index',
-                                        '*'
-                                        )
-                                        )
-                                self.output(
-                                    f"Selecting item {select_value_index} "
-                                    f"from ({len(results)}) "
-                                    "results from xpath expression",
-                                    3
-                                    )
-                                if str(select_value_index) == '*':
-                                    value = [str(r) for r in results]
-                                else:
-                                    try:
-                                        self.output(
-                                            "Selecting item "
-                                            f"{select_value_index} from "
-                                            "xpath results",
-                                            3
-                                            )
-                                        index = int(select_value_index)
-                                        value = str(results[index])
-                                    except Exception as e:
-                                        raise ProcessorError(
-                                            "Failed to select index "
-                                            f"{select_value_index} from "
-                                            "xpath results for expression "
-                                            f"{xml_xpath_expr} on property "
-                                            f"{eval_property}. "
-                                            f"Error: {str(e)}"
-                                            )
-                        except Exception as e:
-                            if export_properties[k].get(
-                                'raise_error',False) == True:
-                                raise ProcessorError(
-                                    "Failed to evaluate xpath expression "
-                                    f"{xml_xpath_expr} on property "
-                                    f"{eval_property}. Error: {str(e)}")
-                            else:
-                                value = None              
-                truncated_value = value if len(str(value)) <= 32 \
-                    else (str(value)[0:31] + '...') 
-                self.output(
-                    f"Setting '{k}' export property from a(n) "
-                    f"{export_properties[k]['type']} expression which "
-                    f"evaluated to ({truncated_value}) on the retrieved "
-                    "application",
-                    3
-                    )
-                self.env[k] = value
-                
-        except Exception as e:
-            self.output(
-                "Failed to retrieve the application from the MCM site."
-                )
-            raise e
-
+        """Run the execute function"""
+        self.execute()
+    
 if __name__ == "__main__":
-    processor = McmAppGetter()
-    processor.execute_shell()
+    PROCESSOR = McmAppGetter()
+    PROCESSOR.execute_shell()
