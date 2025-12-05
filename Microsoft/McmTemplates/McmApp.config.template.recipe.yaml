@@ -80,10 +80,10 @@ Process:
               DeploymentType: DeploymentTypeName3
               IsAutoInstall: false
         ReturnCodes:
-        - ReturnCode:
-          ReturnCode: 4000
-          CodeType: Failure # Failure, Success, FastRetry, HardReboot, SoftReboot
-          Description: "Catastrophic failure"
+          -
+            ReturnCode: 4000
+            CodeType: Failure # Failure, Success, FastRetry, HardReboot, SoftReboot
+            Description: "Catastrophic failure"
 #        Detection:
 #          Type: CustomScript # CustomScript, File, Directory, RegistryKey, RegistryKeyValue, WindowsInstaller, Group
 #          Options:
