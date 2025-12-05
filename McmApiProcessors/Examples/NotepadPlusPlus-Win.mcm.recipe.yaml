@@ -4,7 +4,7 @@ Description: |
   correct folder.
 Identifier: com.github.iancohn.mcm.NotepadPlusPlus-Win
 MinimumVersion: "2.7.6"
-ParentRecipe: com.github.iancohn.mcm.NotepadPlusPlus-Win
+#ParentRecipe: com.github.iancohn.download.NotepadPlusPlus-Win
 Input:
   NAME: NotepadPlusPlus
   COMPANY: NotepadPlusPlus
