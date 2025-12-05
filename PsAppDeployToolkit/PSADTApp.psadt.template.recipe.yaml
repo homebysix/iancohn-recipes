@@ -1,7 +1,7 @@
 Description: |
   This is a template recipe which will create a directory containing the PSAppDeployToolkit 
   framework and files and can be adapter to place any required files into the files directory.
-Identifier: com.github.iancohn.pkg.PSADTApp.AppName
+Identifier: com.github.iancohn.psadt.AppName
 MinimumVersion: 2.3.0
 #ParentRecipe: com.here.recipe.download.your
 
