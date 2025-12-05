@@ -9,7 +9,6 @@ Input:
   NAME: NotepadPlusPlus
   COMPANY: NotepadPlusPlus
 Process:
-  - Processor: EndOfCheckPhase
   - Processor: com.github.iancohn.mcm-api.processors/McmAppGetter
     Arguments:
       keychain_password_username: user1@company,com
