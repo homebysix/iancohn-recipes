@@ -685,6 +685,46 @@ class McmApiBase(Processor):
         attr = XmlAttributeAsDict(Name = "ResourceId", Value = f"Res_{McmIdentifier().resource_id}")
         return attr
     
+    def get_category(self,category_name: str, category_type_name: str=''):
+        filter_clauses = [f"LocalizedCategoryInstanceName eq '{category_name}'"]
+        if category_type_name != '':
+            filter_clauses.append(f"CategoryTypeName eq '{category_type_name}'")
+        search_filter = f"$filter = {' and '.join(filter_clauses)}"
+        url = f"https://{self.fqdn}/AdminService/wmi/SMS_CategoryInstance?{search_filter}"
+        self.output(f"Getting categories: {url}", 3)
+        response = requests.request(
+            method = 'GET', 
+            url = url, 
+            auth = self.ntlm_auth,
+            headers = self.headers, 
+            verify = False
+        )
+        if response.status_code == 200 and len(response.json()['value']) == 1:
+            self.response_value = response.json()["value"][0]
+        elif response.status_code == 200 and len(response.json()['value']) > 1:
+            raise ProcessorError("Retrieved more than one category")
+        elif response.status_code != 200:
+            raise ProcessorError(response.reason)
+        else:
+            self.response_value = {}
+    
+    def get_mcm_object_type_id(self,object_key:str) -> int:
+        """Return the unique id that MCM assigns to an object id by
+        querying the SMS_SecuredCategoryMembership for the object
+        """
+        self.output(f"Getting ObjectTypeID for {object_key}")
+        url = f"https://{self.fqdn}/AdminService/wmi/SMS_SecuredCategoryMembership?$filter=startsWith(ObjectKey,'{self.object_key}') eq true"
+        sms_secured_category_membership = requests.request(
+            method='GET',
+            url=url,
+            auth=self.get_mcm_ntlm_auth(),
+            headers=self.headers,
+            verify=False
+        )
+        if len(sms_secured_category_membership.json()['value']) >= 1:
+            return sms_secured_category_membership.json()['value'][0]['ObjectTypeID']
+        else:
+            raise ProcessorError('Could not locate the ObjectTypeID for the given ObjectKey')
     @staticmethod
     def get_nsmap(namespace_name: str, include_xsi:bool = False) -> dict:
         """Create a namespace map object for use in etree.Element

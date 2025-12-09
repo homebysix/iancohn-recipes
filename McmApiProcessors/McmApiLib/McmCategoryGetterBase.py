@@ -41,34 +41,11 @@ class McmCategoryGetterBase(McmApiBase):
         self.initialize_export_properties("mcm_category_getter_export_properties")
         self.fqdn = self.env.get('mcm_site_server_fqdn')
 
-    def get_category(self):
-        category_name = self.env.get('category_name')
-        category_type_name = self.env.get('category_type') or ''
-        filter_clauses = [f"LocalizedCategoryInstanceName eq '{category_name}'"]
-        if category_type_name != '':
-            filter_clauses.append(f"CategoryTypeName eq '{category_type_name}'")
-        search_filter = f"$filter = {' and '.join(filter_clauses)}"
-        url = f"https://{self.fqdn}/AdminService/wmi/SMS_CategoryInstance?{search_filter}"
-        self.output(f"Getting categories: {url}", 3)
-        response = requests.request(
-            method = 'GET', 
-            url = url, 
-            auth = self.ntlm_auth,
-            headers = self.headers, 
-            verify = False
-        )
-        if response.status_code == 200 and len(response.json()['value']) == 1:
-            self.response_value = response.json()["value"][0]
-        elif response.status_code == 200 and len(response.json()['value']) > 1:
-            raise ProcessorError("Retrieved more than one category")
-        elif response.status_code != 200:
-            raise ProcessorError(response.reason)
-        else:
-            self.response_value = {}
-
     def execute(self):
         self.initialize_all()
-        self.get_category()
+        category_name = self.env.get('category_name')
+        category_type_name = self.env.get('category_type') or ''
+        self.get_category(category_name=category_name, category_type_name=category_type_name)
         if self.response_value is None or self.response_value == {}:
             create_if_not_exists = self.env.get('create_nonexistant_category')
             self.output(f"Category {self.env.get('category_name')} does not exist", 2)

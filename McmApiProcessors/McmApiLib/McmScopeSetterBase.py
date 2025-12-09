@@ -76,25 +76,6 @@ class McmScopeSetterBase(McmApiBase):
             "by_category_name_lower": {e['CategoryName'].lower(): e['CategoryID'] for e in (sms_secured_categories.json().get('value',[]))},
         }
 
-    def get_mcm_object_type_id(self,object_key:str) -> int:
-        """Return the unique id that MCM assigns to an object id for
-        use in security scope assignment by querying the
-        SMS_SecuredCategoryMembership for the object
-        """
-        self.output(f"Getting ObjectTypeID for {object_key}")
-        url = f"https://{self.fqdn}/AdminService/wmi/SMS_SecuredCategoryMembership?$filter=startsWith(ObjectKey,'{self.object_key}') eq true"
-        sms_secured_category_membership = requests.request(
-            method='GET',
-            url=url,
-            auth=self.get_mcm_ntlm_auth(),
-            headers=self.headers,
-            verify=False
-        )
-        if len(sms_secured_category_membership.json()['value']) >= 1:
-            return sms_secured_category_membership.json()['value'][0]['ObjectTypeID']
-        else:
-            raise ProcessorError('Could not locate the ObjectTypeID for the given ObjectKey')
-
     def execute(self):
         self.initialize_all()
         self.final_scope_names = []
