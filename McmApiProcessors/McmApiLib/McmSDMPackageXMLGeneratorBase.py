@@ -1040,29 +1040,6 @@ class McmSDMPackageXMLGeneratorBase(McmApiBase):
         user_categories_node = XmlNodeAsDict(**params)
         return user_categories_node
     
-    def create_user_category(self, user_category_name: str) ->  str:
-        """Connect to MCM and create a new user category"""
-        self.output(f"Attempting to create user category ({user_category_name}) in {self.fqdn}", 2)
-        raise ProcessorError("Creating user categories is not supported.")
-        url = f"https://{self.fqdn}/AdminService/wmi/SMS_Application"
-        body = {"CategoryTypeName": "CatalogCategories", "Cat" : f"'{user_category_name}' and IsLatest eq true", '$select':"CI_ID"}
-        appSearchResponse = requests.request(
-            method = 'GET', 
-            url = url, 
-            auth = self.ntlm, 
-            headers = self.headers, 
-            verify = False, 
-            params = body
-        )
-        self.output(f"Done searching for application. {type(appSearchResponse).__name__} type object returned.", 3)
-        searchValue = appSearchResponse.json()["value"]
-        self.output(f"{searchValue.__len__()} Application objects returned from {self.fqdn}", 3)
-
-    def get_user_category_id(self, user_category_name: str) -> str:
-        """Connect to MCM and search for a given user category
-        object
-        """
-        
     # Deployment Type
     def new_languages_node(self, languages: list[str]) -> XmlNodeAsDict:
         """Create a languages XmlNodeAsDict object"""
