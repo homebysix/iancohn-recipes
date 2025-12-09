@@ -17,6 +17,7 @@ repos:
       - id: check-merge-conflict
       - id: check-yaml
       - id: detect-private-key
+        exclude: ^McmApiProcessors/McmApiLib/vendor/
       - id: end-of-file-fixer
       - id: fix-byte-order-marker
       - id: mixed-line-ending
