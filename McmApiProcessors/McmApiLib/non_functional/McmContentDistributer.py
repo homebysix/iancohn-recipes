@@ -27,7 +27,7 @@ import sys
 # imports require noqa comments for E402
 sys.path.insert(0, os.path.dirname(__file__))
 
-from McmApiLib.McmContentDistributerBase import (  # pylint: disable=import-error, wrong-import-position
+from McmApiProcessors.McmApiLib.non_functional.McmContentDistributerBase import (  # pylint: disable=import-error, wrong-import-position
     McmContentDistributerBase,
 )
 
@@ -66,7 +66,16 @@ class McmContentDistributer(McmContentDistributerBase):
             "required": False,
             "description": "A list of NALPath strings for distribution points that should receive the content",
             "default": []
-        }
+        },
+        "content_id": {
+            "required": True,
+            "description": "The unique identifier of the SMS_ContentPackage for which content should be distributed."
+        },
+        "include_referenced": {
+            "required": False,
+            "description": "Whether or not to distribute the content for any dependencies",
+            "default": True
+        },
 
     }
     output_variables = {}

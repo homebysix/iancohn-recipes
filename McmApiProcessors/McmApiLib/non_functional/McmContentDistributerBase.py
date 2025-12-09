@@ -38,8 +38,13 @@ class McmContentDistributerBase(McmApiBase):
       self.initialize_headers()
       self.initialize_ntlm_auth()
       
+def execute(self):
+    pass
 
-"""restart_existing_distributions": {
+"""
+        "something_id"
+        "include_referenced"
+        "restart_existing_distributions": {
             "required": False,
             "description": "Whether to redistribute (stop/start) the content to locations where it is already distributed.",
             "default": True
@@ -54,4 +59,11 @@ class McmContentDistributerBase(McmApiBase):
             "description": "A list of NALPath strings for distribution points that should receive the content",
             "default": []
         }
+
+GET SMS_ContentPackage(PackageID) (or security key, then package id)
+GET SMS_CIRelation (Where ?From/To? is CI_ID)
+GET SMS_PackageContentServerInfo
+
+POST SMS_ContentPackage(PackageID).AddDistributionPointGroup
+POST SMS_ContentPackage(PackageID).AddDistributionPoints
 """
