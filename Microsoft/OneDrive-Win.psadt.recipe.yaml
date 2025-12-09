@@ -1,5 +1,5 @@
 Description: Create a PSADT content repository folder for OneDrive
-Identifier: com.github.iancohn.pkg.PSADTApp.OneDrive-Win
+Identifier: com.github.iancohn.psadt.OneDrive-Win
 MinimumVersion: 2.3.0
 ParentRecipe: com.github.iancohn.download.OneDrive-Win
 
