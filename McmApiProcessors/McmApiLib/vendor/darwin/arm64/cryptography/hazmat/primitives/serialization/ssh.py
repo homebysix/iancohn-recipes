@@ -75,8 +75,8 @@ _SSH_RSA_SHA512 = b"rsa-sha2-512"
 
 _SSH_PUBKEY_RC = re.compile(rb"\A(\S+)[ \t]+(\S+)")
 _SK_MAGIC = b"openssh-key-v1\0"
-_SK_START = b"-----BEGIN OPENSSH PRIVATE KEY-----" # noqa: private-key
-_SK_END = b"-----END OPENSSH PRIVATE KEY-----" # noqa: private-key
+_SK_START = b"-----BEGIN OPENSSH PRIVATE KEY-----"
+_SK_END = b"-----END OPENSSH PRIVATE KEY-----"
 _BCRYPT = b"bcrypt"
 _NONE = b"none"
 _DEFAULT_CIPHER = b"aes256-ctr"
