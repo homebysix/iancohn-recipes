@@ -32,33 +32,6 @@ sys.path.insert(0,os.path.dirname(__file__))
 from McmApiLib.McmApiBase import ( #noqa: E402
     McmApiBase
 )
-"""
-        "object_key": {
-            "required": False,
-            "description": "The object key of the object to set security scopes on. Defaults to the value of app_model_name"
-        },
-        "object_class": {
-            "required": False,
-            "description": "The class of the object to move."
-        },
-        "action": {
-            "required": False,
-            "description": 
-                "The action to take on the supplied object's category memberships.",
-            "default": "replace",
-            "options": ['add','remove','replace']
-        },
-        "admin_category_names": {
-            "required": False,
-            "description": "A list of category friendly names",
-            "default": []
-        },
-        "current_admin_categories": {
-            "required": False,
-            "description": "Pre-populate the administrative categories assigned to the object to reduce queries to MCM.",
-            "default": []
-        },
-"""
 class McmAdminCategorySetterBase(McmApiBase):
     def initialize_all(self):
         self.initialize_headers()
@@ -79,10 +52,12 @@ class McmAdminCategorySetterBase(McmApiBase):
                 category_name=n,category_type_name='AppCategories'
                 ) for n in self.action_admin_category_names
                 ]
-        self.current_admin_categories = self.get('current_admin_categories')
+        self.current_admin_categories = self.get('current_admin_categories',self.get('app_categories')) or []
 
     def execute(self):
         self.initialize_all()
+        self.output(f"Current Administrative Categories: {', '.join(self.current_admin_categories)}", 2)
+        self.output(f"Action: {self.action}", 2)
         self.final_cat_memberships = []
         for c in self.current_admin_categories:
             if  self.action == 'remove' and self.action_admin_category_unique_ids.__contains__(c):
@@ -95,7 +70,7 @@ class McmAdminCategorySetterBase(McmApiBase):
             if ['add','replace'].__contains__(self.action) and self.final_cat_memberships.__contains__(s) == False:
                 self.output(f"Category {s} will be added", 3)
                 self.final_cat_memberships.append(s)
-        self.output(f"Final categories will be set to: {', '.join(self.final_cat_memberships)}", 2)
+        self.output(f"Updated Administrative Cateogires: {', '.join(self.final_cat_memberships)}", 2)
         if self.final_cat_memberships == self.current_category_names:
             self.output("Current categories match desired scopes. Nothing to do.", 1)
             return

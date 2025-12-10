@@ -66,12 +66,16 @@ class McmAdminCategorySetter(McmAdminCategorySetterBase):
             "default": "replace",
             "options": ['add','remove','replace']
         },
-        "category_names": {
+        "admin_category_names": {
             "required": False,
             "description": "A list of category friendly names",
             "default": []
         },
-
+        "current_admin_categories": {
+            "required": False,
+            "description": "Pre-populate the administrative categories assigned to the object to reduce queries to MCM. Defaults to the value of app_categories",
+            "default": []
+        },
     }
     output_variables = {}
 
