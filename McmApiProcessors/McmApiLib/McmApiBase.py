@@ -708,6 +708,30 @@ class McmApiBase(Processor):
         else:
             self.response_value = {}
     
+    def get_mcm_category_memberships(self,object_key : str) -> list:
+        """Connect to MCM and retrieve the current category memberships
+        for a given object
+        """
+        self.output("Retrieving possible security scopes", 3)
+        url = f"https://{self.fqdn}/AdminService/wmi/SMS_CategoryInstanceMembership?$filter=ObjectKey eq '{object_key}'"
+        sms_category_instances = requests.request(
+            method='GET',
+            url=url,
+            auth=self.get_mcm_ntlm_auth(),
+            headers=self.headers,
+            verify=False,
+        )
+        sms_category_instances.raise_for_status()
+
+        memberships = [{
+            "CategoryInstanceID": instance['CategoryInstanceID'],
+            "ObjectKey": instance['ObjectKey'],
+            "ObjectTypeID": instance['ObjectTypeID'],
+            "UniqueID": instance['@odata.etag'],
+        } for instance in sms_category_instances.json()['value']]
+        
+        return memberships
+
     def get_mcm_object_type_id(self,object_key:str) -> int:
         """Return the unique id that MCM assigns to an object id by
         querying the SMS_SecuredCategoryMembership for the object
@@ -764,7 +788,16 @@ class McmApiBase(Processor):
         if include_xsi == True:
             output['nsmap']['xsi'] = 'http://www.w3.org/2001/XMLSchema-instance'
         return output
-
+    @staticmethod
+    def uses_revisions(object_class: str, dynamic: bool = False) -> bool:
+        """Return True if the object uses revisions. This determines
+        if the object type should be suffixed with 'Latest'
+        """
+        if dynamic == True:
+            raise ProcessorError("Dynamic revision determination not supported at this time.")
+        else:
+            result = ['sms_application','sms_configurationitem'].__contains__(object_class.lower())
+        return result
     @staticmethod
     def try_cast(type_name, value, default = None):
         """Cast the supplied value as the indicated type. If it cannot
