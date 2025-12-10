@@ -37,7 +37,6 @@ class McmScopeSetterBase(McmApiBase):
     def initialize_all(self):
         self.initialize_headers()
         self.initialize_ntlm_auth()
-        self.initialize_export_properties("mcm_app_uploader_export_properties")
         self.fqdn = self.env.get('mcm_site_server_fqdn')
 
         self.action = self.env.get('action',self.input_variables['action']['default']).lower()
@@ -95,7 +94,7 @@ class McmScopeSetterBase(McmApiBase):
             if self.action == 'replace' and self.final_scope_names.__contains__(s) == False:
                 self.output(f"Scope {s} will be removed", 3)
                 self.remove_scope_names.append(s)
-            elif self.action == 'add' and self.final_scope_names__contains__(s) == False:
+            elif self.action == 'add' and self.final_scope_names.__contains__(s) == False:
                 self.output(f"Scope {s} will be kept", 3)
                 self.final_scope_names.append(s)
         self.output(f"Final security scopes will be set to: {', '.join(self.final_scope_names)}", 2)

@@ -94,12 +94,7 @@ class McmCategoryGetter(McmCategoryGetterBase):
                 "Positive or negative integers may be specified to select a specific index from the result set (0-based). Negative integers count from the end of the result set (-1 is the last item))."
         }
     }
-    output_variables = {
-        "SDMPackageXML": {"description": "Serialized XML string representing an application object."}, 
-        "mcm_scope_id": {"description": "The authoring scope id for objects in the target MCM site."}, 
-        "mcm_application": {"description": "A dictionary representation of the mcm application"}, 
-        "mcm_application_ci_id": {"description": "The CI_ID where the application should be posted. 0 indicates a new application."}, 
-    }
+    output_variables = {}
 
     def main(self):
         """Run the execute function"""
