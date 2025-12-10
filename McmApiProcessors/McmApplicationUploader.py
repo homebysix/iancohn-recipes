@@ -62,6 +62,7 @@ class McmApplicationUploader(McmApplicationUploaderBase):
             "required": False,
             "default": {
                 "app_ci_id": {"type": "property", "raise_error": False,"options": {"property": "CI_ID"}},
+                "app_categories": {"type": "property", "raise_error": False, "options": {"property": "CategoryInstance_UniqueIDs"}},
                 "app_model_name": {"type": "property", "raise_error": True,"options": {"property": "ModelName"}},
                 "object_class": {"type": "property", "raise_error": True,"options": {"property": "__CLASS"}},
                 "current_object_path": {"type":"property", "raise_error": False, "options": {"property": "ObjectPath"}},
