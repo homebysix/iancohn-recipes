@@ -53,8 +53,6 @@ class McmCategoryGetterBase(McmApiBase):
                 raise ProcessorError("Category does not exist, and create_if_not_exists was set to False.")
             self.output(f"Creating a new {self.env.get('category_type_name')} category", 3)
             raise ProcessorError("Category creation is not supported at this time.")
-            return
-        
+
         self.output(f"Finished searching for category", 3)
         self.set_export_properties()
-
