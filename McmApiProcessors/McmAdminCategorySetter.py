@@ -55,10 +55,6 @@ class McmAdminCategorySetter(McmAdminCategorySetterBase):
             "required": False,
             "description": "The object key of the object to set security scopes on. Defaults to the value of app_model_name"
         },
-        "object_class": {
-            "required": False,
-            "description": "The class of the object to move."
-        },
         "action": {
             "required": False,
             "description": 

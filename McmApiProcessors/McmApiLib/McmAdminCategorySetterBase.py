@@ -45,14 +45,18 @@ class McmAdminCategorySetterBase(McmApiBase):
             self.output(f"Supplied object_key: {self.object_key}")
             raise ProcessorError("object_key is required")
         self.action_admin_category_names = self.env.get('admin_category_names') or []
-        if isinstance(self.action_category_names, list) == False:
+        if isinstance(self.action_admin_category_names, list) == False:
             raise ProcessorError("category_names must be a list type object, even if it contains no items")
-        self.action_admin_category_unique_ids = [
+        self.action_admin_categories = [
             self.get_category(
                 category_name=n,category_type_name='AppCategories'
                 ) for n in self.action_admin_category_names
                 ]
-        self.current_admin_categories = self.get('current_admin_categories',self.get('app_categories')) or []
+        self.action_admin_category_unique_ids = []
+        for c in self.action_admin_categories:
+            if c is not None:
+                self.action_admin_category_unique_ids.append(c['CategoryInstance_UniqueID'])
+        self.current_admin_categories = self.env.get('current_admin_categories',self.env.get('app_categories')) or []
 
     def execute(self):
         self.initialize_all()
@@ -60,18 +64,18 @@ class McmAdminCategorySetterBase(McmApiBase):
         self.output(f"Action: {self.action}", 2)
         self.final_cat_memberships = []
         for c in self.current_admin_categories:
-            if  self.action == 'remove' and self.action_admin_category_unique_ids.__contains__(c):
+            if  c is not None and self.action == 'remove' and self.action_admin_category_unique_ids.__contains__(c):
                 self.output(f"Category {c} will be explicitly removed", 3)
-            elif self.action.lower() == 'add' and self.final_cat_memberships.__contains__(c) == False:
+            elif c is not None and self.action.lower() == 'add' and self.final_cat_memberships.__contains__(c) == False:
                 self.output(f"Category {c} will be kept", 3)
                 self.final_cat_memberships.append(c)
-
+        self.output(f"\n\t{', '.join(self.action_admin_category_names)}\n\t{', '.join(self.action_admin_category_unique_ids)}", 3)
         for s in self.action_admin_category_unique_ids:
-            if ['add','replace'].__contains__(self.action) and self.final_cat_memberships.__contains__(s) == False:
+            if s is not None and ['add','replace'].__contains__(self.action) and self.final_cat_memberships.__contains__(s) == False:
                 self.output(f"Category {s} will be added", 3)
                 self.final_cat_memberships.append(s)
         self.output(f"Updated Administrative Cateogires: {', '.join(self.final_cat_memberships)}", 2)
-        if self.final_cat_memberships == self.current_category_names:
+        if self.final_cat_memberships == self.current_admin_categories:
             self.output("Current categories match desired scopes. Nothing to do.", 1)
             return
         # Update categories

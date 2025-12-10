@@ -707,6 +707,7 @@ class McmApiBase(Processor):
             raise ProcessorError(response.reason)
         else:
             self.response_value = {}
+        return self.response_value
     
     def get_mcm_category_memberships(self,object_key : str) -> list:
         """Connect to MCM and retrieve the current category memberships
