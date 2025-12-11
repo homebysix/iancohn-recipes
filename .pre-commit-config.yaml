@@ -11,18 +11,26 @@ repos:
     hooks:
       - id: check-added-large-files
         args: ["--maxkb=100"]
+        exclude: ^McmApiProcessors/McmApiLib/vendor/
       - id: check-ast
+        exclude: ^McmApiProcessors/McmApiLib/vendor/
       - id: check-case-conflict
+        exclude: ^McmApiProcessors/McmApiLib/vendor/
       - id: check-executables-have-shebangs
+        exclude: ^McmApiProcessors/McmApiLib/vendor/
       - id: check-merge-conflict
       - id: check-yaml
       - id: detect-private-key
         exclude: ^McmApiProcessors/McmApiLib/vendor/
       - id: end-of-file-fixer
+        exclude: ^McmApiProcessors/McmApiLib/vendor/
       - id: fix-byte-order-marker
+        exclude: ^McmApiProcessors/McmApiLib/vendor/
       - id: mixed-line-ending
+        exclude: ^McmApiProcessors/McmApiLib/vendor/
       - id: trailing-whitespace
         args: ["--markdown-linebreak-ext=md"]
+        exclude: ^McmApiProcessors/McmApiLib/vendor/
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 25.12.0
     hooks:
