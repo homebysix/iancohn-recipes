@@ -23,7 +23,7 @@ $target = "com.github.autopkg.iancohn-recipes.mcmapi" # Or your preferred servic
 & cmdkey /generic:"$target" /user:"$($credential.UserName)" /pass:"$($credential.GetNetworkCredential().Password)"
 ```
 
-> :information_source: **Important Note:** These processors have not yet been tested on Windows
+> :information_source: **Important Note:** These processors have not yet been tested on Windows and are almost certainly NOT functional
 
 # Common Input Variables
 
@@ -38,6 +38,24 @@ The following input variables are used in most of these processors.
 
 # Processors
 The following processors are currently part of this sub group. The names should be intuitive as to their intended purpose
+
+## McmAdminCategorySetter
+Set the administrative categories on an application
+
+### McmAdminCategorySetter Input Variables
+
+| Variable Name | Description | Default Value |
+| ------------- | ----------- | ------------- |
+| keychain_password_service | [See Above](#common-input-variables) | com.github.autopkg.iancohn-recipes.mcmapi |
+| keychain_password_username | [See Above](#common-input-variables) | `<None>` |
+| mcm_site_server_fqdn| [See Above](#common-input-variables) | `<None>` |
+| object_key | The object key of the application to set the security scopes on. For applications this is the ModelName attribute | Defaults to the value of %app_model_name% |
+| action | The action to take on the supplied object's category memberships (`add`, `remove`, `replace`) | `replace` |
+| admin_category_names | A list of category friendly names to add/remove/replace on the object | `<None>` |
+| current_admin_categories | Pre-populate the administrative categories assigned to the object to reduce queries to MCM. Defaults to the value of app_categories | `[]` |
+
+### Output Variables
+None
 
 ## McmAppGetter
 Get an application object from MCM.
