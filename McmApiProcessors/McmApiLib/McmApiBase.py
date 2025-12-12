@@ -843,15 +843,12 @@ class McmApiBase(Processor):
     def initialize_ntlm_auth(self):
         self.output("Checking supplied parameters", 3)
         self.keychain_service_name = self.env.get("keychain_password_service")
-        self.keychain_username = self.env.get("keychain_password_username", self.env.get("MCMAPI_USERNAME", ''))
+        self.keychain_username = self.env.get("keychain_password_username", None) or self.env.get("MCMAPI_USERNAME", '')
         self.fqdn = self.env.get("mcm_site_server_fqdn", '')
-
         if (self.fqdn == None or self.fqdn == ''):
             raise ValueError("mcm_site_server_fqdn cannot be blank")
-
         if (self.keychain_service_name == None or self.keychain_service_name == ''):
             raise ValueError("keychain_password_service cannot be blank")
-
         if (self.keychain_username == None or self.keychain_username == ''):
             raise ValueError("keychain_password_username cannot be blank")
         self.ntlm_auth = None
