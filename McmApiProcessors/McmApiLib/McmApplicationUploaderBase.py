@@ -38,6 +38,7 @@ class McmApplicationUploaderBase(McmApiBase):
     def initialize_all(self):
         self.initialize_headers()
         self.initialize_ntlm_auth()
+        self.initialize_ssl_verification()
         self.initialize_export_properties("mcm_app_uploader_export_properties")
         self.fqdn = self.env.get('mcm_site_server_fqdn')
         self.app_sdmpackagexml = self.env.get('mcm_application_sdmpackagexml')
@@ -56,7 +57,7 @@ class McmApplicationUploaderBase(McmApiBase):
             url = url,
             auth = self.get_mcm_ntlm_auth(),
             headers = self.headers,
-            verify = False,
+            verify = self.get_ssl_verify_param(),
             json = body
         )
         self.output(f"Status Code [{post_response.status_code}]")

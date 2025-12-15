@@ -515,7 +515,7 @@ class McmApiBase(Processor):
                 auth = self.get_mcm_ntlm_auth(),
                 headers = self.headers, 
                 timeout = (2, 5), 
-                verify = False
+                verify = self.get_ssl_verify_param()
             )
             response.raise_for_status()
             json_response = response.json()
@@ -545,7 +545,7 @@ class McmApiBase(Processor):
             url = url, 
             auth = self.ntlm, 
             headers = self.headers, 
-            verify = False, 
+            verify = self.get_ssl_verify_param(), 
             params = body
         )
         self.output(f"Done searching for application. {type(appSearchResponse).__name__} type object returned.", 3)
@@ -563,7 +563,7 @@ class McmApiBase(Processor):
             url = appUrl, 
             auth = self.ntlm, 
             headers = self.headers, 
-            verify = False
+            verify = self.get_ssl_verify_param()
         )
         self.output("Done getting SDMPackageXML", 3)
         appJson = app.json()
@@ -597,7 +597,7 @@ class McmApiBase(Processor):
             url = url,
             auth = self.get_mcm_ntlm_auth(),
             headers = self.headers,
-            verify = False,
+            verify = self.get_ssl_verify_param(),
             params = body
         )
         if app_search_response.status_code != 200:
@@ -627,7 +627,7 @@ class McmApiBase(Processor):
             url = app_detail_url,
             auth = self.get_mcm_ntlm_auth(),
             headers = self.headers,
-            verify = False,
+            verify = self.get_ssl_verify_param(),
             timeout = (2,5)
         )
         if response.status_code == 200 and len(app_search_response.json()['value']) == 1:
@@ -647,7 +647,7 @@ class McmApiBase(Processor):
             url = url, 
             auth = self.ntlm, 
             headers = self.headers, 
-            verify = False, 
+            verify = self.get_ssl_verify_param(), 
             params = body
         )
         self.output(f"Done searching for task sequence. {type(searchResponse).__name__} type object returned.", 3)
@@ -697,7 +697,7 @@ class McmApiBase(Processor):
             url = url, 
             auth = self.ntlm_auth,
             headers = self.headers, 
-            verify = False
+            verify = self.get_ssl_verify_param()
         )
         if response.status_code == 200 and len(response.json()['value']) == 1:
             self.response_value = response.json()["value"][0]
@@ -717,10 +717,10 @@ class McmApiBase(Processor):
         url = f"https://{self.fqdn}/AdminService/wmi/SMS_CategoryInstanceMembership?$filter=ObjectKey eq '{object_key}'"
         sms_category_instances = requests.request(
             method='GET',
-            url=url,
-            auth=self.get_mcm_ntlm_auth(),
-            headers=self.headers,
-            verify=False,
+            url = url,
+            auth = self.get_mcm_ntlm_auth(),
+            headers = self.headers,
+            verify = self.get_ssl_verify_param(),
         )
         sms_category_instances.raise_for_status()
 
@@ -740,11 +740,11 @@ class McmApiBase(Processor):
         self.output(f"Getting ObjectTypeID for {object_key}")
         url = f"https://{self.fqdn}/AdminService/wmi/SMS_SecuredCategoryMembership?$filter=startsWith(ObjectKey,'{self.object_key}') eq true"
         sms_secured_category_membership = requests.request(
-            method='GET',
-            url=url,
-            auth=self.get_mcm_ntlm_auth(),
-            headers=self.headers,
-            verify=False
+            method = 'GET',
+            url = url,
+            auth = self.get_mcm_ntlm_auth(),
+            headers = self.headers,
+            verify = self.get_ssl_verify_param()
         )
         if len(sms_secured_category_membership.json()['value']) >= 1:
             return sms_secured_category_membership.json()['value'][0]['ObjectTypeID']
@@ -853,6 +853,29 @@ class McmApiBase(Processor):
             raise ValueError("keychain_password_username cannot be blank")
         self.ntlm_auth = None
         _ = self.get_mcm_ntlm_auth()
+    
+    def initialize_ssl_verification(self):
+        self.output("Configuring SSL verification", 3)
+        _ssl_verify = self.env.get("mcm_ssl_verification",False)
+        if isinstance(_ssl_verify, bool):
+            self.ssl_verify = _ssl_verify
+        elif isinstance(_ssl_verify, str):
+            self.ssl_verify = str(Path(_ssl_verify).resolve())
+
+    def get_ssl_verify_param(self):
+        """Get the value of the 'verify' parameter for http requests
+        """
+        if self.ssl_verify is not None and (
+            isinstance(self.ssl_verify, bool) or isinstance(self.ssl_verify, str)
+            ):
+            self.output("ssl_verify object exists. Returning it", 3)
+            return self.ssl_verify
+        self.output("NTLM Auth object does not currently exist. It will be created", 3)
+        try:
+            self.initialize_ssl_verification()
+            return self.ssl_verify
+        except Exception as e:
+            raise ProcessorError(f"Failed to retrieve ssl verification: {e}")
 
     def initialize_export_properties(self,input_variable_name: str):
         self.export_properties = self.env.get(input_variable_name)

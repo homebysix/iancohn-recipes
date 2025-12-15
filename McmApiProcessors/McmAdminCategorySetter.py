@@ -51,6 +51,14 @@ class McmAdminCategorySetter(McmAdminCategorySetterBase):
             "required": True,
             "description": "The FQDN of the site server. Ex. mcm.domain.com"
         },
+        "mcm_ssl_verification": {
+            "required": False,
+            "description": 
+                "Either a boolean, in which case it controls whether we verify the "
+                "server’s TLS certificate, or a string, in which case it must be a "
+                "path to a CA bundle to use",
+            "default": False
+        },
         "object_key": {
             "required": False,
             "description": "The object key of the object to set security scopes on. Defaults to the value of app_model_name"

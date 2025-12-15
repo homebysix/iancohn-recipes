@@ -37,6 +37,7 @@ class McmScopeSetterBase(McmApiBase):
     def initialize_all(self):
         self.initialize_headers()
         self.initialize_ntlm_auth()
+        self.initialize_ssl_verification()
         self.fqdn = self.env.get('mcm_site_server_fqdn')
 
         self.action = self.env.get('action',self.input_variables['action']['default']).lower()
@@ -63,11 +64,11 @@ class McmScopeSetterBase(McmApiBase):
         self.output("Retrieving possible security scopes", 3)
         url = f"https://{self.fqdn}/AdminService/wmi/SMS_SecuredCategory"
         sms_secured_categories = requests.request(
-            method='GET',
-            url=url,
-            auth=self.get_mcm_ntlm_auth(),
-            headers=self.headers,
-            verify=False,
+            method = 'GET',
+            url = url,
+            auth = self.get_mcm_ntlm_auth(),
+            headers = self.headers,
+            verify = self.get_ssl_verify_param(),
         )
         return {
             "scopes": [{"category_id":c['CategoryID'], "category_name": c['CategoryName']} for c in (sms_secured_categories.json().get('value',[]))],
@@ -123,7 +124,7 @@ class McmScopeSetterBase(McmApiBase):
                 auth = self.get_mcm_ntlm_auth(),
                 headers = self.headers,
                 json = add_body,
-                verify = False
+                verify = self.get_ssl_verify_param()
             )
             self.output(f"Add security scopes response: {add_response.reason}", 3)
             add_response.raise_for_status()
@@ -150,7 +151,7 @@ class McmScopeSetterBase(McmApiBase):
                 headers = self.headers,
                 auth = self.get_mcm_ntlm_auth(),
                 json = remove_json,
-                verify = False
+                verify = self.get_ssl_verify_param()
             )
             self.output(f"Remove security scopes response: {remove_response}", 3)
             remove_response.raise_for_status()

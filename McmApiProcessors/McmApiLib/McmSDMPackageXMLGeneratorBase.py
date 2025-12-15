@@ -18,7 +18,6 @@
 # limitations under the License.
 
 import platform
-import requests
 import uuid
 import json
 import string
@@ -75,8 +74,6 @@ from PIL import Image
 class McmSDMPackageXMLGeneratorBase(McmApiBase):
     """Class for functions used to create an SDMPackageXML string"""
     def initialize_all(self):
-        self.initialize_headers()
-        self.initialize_ntlm_auth()
         self.fqdn = self.env.get('mcm_site_server_fqdn')
         self.get_requirements_rule_config = {
             'XmlString': self.new_requirements_rule_from_string, 

@@ -31,10 +31,11 @@ The following input variables are used in most of these processors.
 
 | Variable Name              | Description                                                                        | Default Value                                                                     |
 | -------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| keychain_password_service  | The name of the service used to register the credential in Keychain                | com.github.autopkg.iancohn-recipes.mcmapi                                         |
-| keychain_password_username | The username for the credential                                                    | `<None>`                                                                        |
-| mcm_site_server_fqdn       | The FQDN of the site server hosting the SMS Provider role that you will connect to | `<None>`                                                                        |
-| *_export_properties        | A dictionary of properties to export as autopkg variables                          | The default value differs depending on the processor.[See Below](#export_properties) |
+| keychain_password_service  | The name of the service used to register the credential in Keychain | com.github.autopkg.iancohn-recipes.mcmapi | 
+| keychain_password_username | The username for the credential | `<None>` |
+| mcm_site_server_fqdn | The FQDN of the site server hosting the SMS Provider role that you will connect to | `<None>` |
+| mcm_ssl_verification | Either a boolean, in which case it controls whether we verify the server’s TLS certificate, or a string, in which case it must be a path to a CA bundle to use | False |
+| *_export_properties | A dictionary of properties to export as autopkg variables | The default value differs depending on the processor.[See Below](#export_properties) |
 
 # Processors
 The following processors are currently part of this sub group. The names should be intuitive as to their intended purpose
@@ -48,7 +49,8 @@ Set the administrative categories on an application
 | ------------- | ----------- | ------------- |
 | keychain_password_service | [See Above](#common-input-variables) | com.github.autopkg.iancohn-recipes.mcmapi |
 | keychain_password_username | [See Above](#common-input-variables) | `<None>` |
-| mcm_site_server_fqdn| [See Above](#common-input-variables) | `<None>` |
+| mcm_site_server_fqdn | [See Above](#common-input-variables) | `<None>` |
+| mcm_ssl_verification | [See Above](#common-input-variables) | `False` |
 | object_key | The object key of the application to set the security scopes on. For applications this is the ModelName attribute | Defaults to the value of %app_model_name% |
 | action | The action to take on the supplied object's category memberships (`add`, `remove`, `replace`) | `replace` |
 | admin_category_names | A list of category friendly names to add/remove/replace on the object | `<None>` |
@@ -66,7 +68,8 @@ Get an application object from MCM.
 | ------------- | ----------- | ------------- |
 | keychain_password_service        | [See Above](#common-input-variables)                         | com.github.autopkg.iancohn-recipes.mcmapi                                                                                                                                                                                                                                                                                                                                                   |
 | keychain_password_username       | [See Above](#common-input-variables)                         | `<None>`                                                                                                                                                                                                                                                                                                                                                                                  |
-| mcm_site_server_fqdn             | [See Above](#common-input-variables)                         | `<None>`                                                                                                                                                                                                                                                                                                                                                                                  |
+| mcm_site_server_fqdn             | [See Above](#common-input-variables)                         | `<None>` |
+| mcm_ssl_verification | [See Above](#common-input-variables) | `False` |
 | mcm_app_getter_export_properties | A dictionary of properties to export as autopkg variables | **existing_app_ci_id** - Populated with the value of the CI_ID property of a returned application object<br />**existing_app_sdmpackagexml** - Populated with the value of the SDMPackageXML property of a returned application object<br />**existing_app_securityscopes** - Populated with the value of the SecuredScopeNames property of a returned application object |
 | application_name                 | The name to search for existing applications in MCM       | `<None>`                                                                                                                                                                                                                                                                                                                                                                                  |
 ### Output Variables
@@ -81,6 +84,7 @@ Connect to an MCM AdminService and retrieve an application object, if it exists
 | keychain_password_service        | [See Above](#common-input-variables)                         | com.github.autopkg.iancohn-recipes.mcmapi                                                                                                                                                                                                                                                                                                                                                   |
 | keychain_password_username       | [See Above](#common-input-variables)                         | `<None>`                                                                                                                                                                                                                                                                                                                                                                                  |
 | mcm_site_server_fqdn             | [See Above](#common-input-variables)                         | `<None>`                                                                                                                                                                                                                                                                                                                                                                                  |
+| mcm_ssl_verification | [See Above](#common-input-variables) | `False` |
 | mcm_app_uploader_export_properties | A dictionary of properties to export as autopkg variables | **app_ci_id** - Populated with the value of the CI_ID property of a response value object. raise_error: false<br />**app_model_name** - Populated with the value of the ModelName property of the response value object. raise_error: true<br />**object_class** - Populated with the value of the __CLASS property of the response value object. raise_error: true<br />**current_object_path** - Populated with the value of the ObjectPath property of the response value object. raise_error: false <br />**app_securityscopes** - Populated with the value of the SecuredScopeNames property of the response value object. raise_error: false <br />**app_is_deployed** - Populated with the value of the "IsDeployed" property of the response value object. raise_error: true<br />**app_logical_name** - Populated with an xpath expression targetting the applications LogicalName from the SDMPackageXML property of the response value object. raise_error: true <br />**app_content_locations** - Populated with a list of Content Locations populated by the result of an xpath expression run against the SDMPackageXML property of the response value object. raise_error: false |
 | mcm_application_ci_id                 | The CI_ID to post the application to. If (0), a new application will be created | 0 |
 | mcm_application_sdmpackagexml | The raw XML definition for the Application | `<None>`
@@ -97,6 +101,7 @@ Dynamic depending upon the configuration of the **mcm_app_uploader_export_proper
 | keychain_password_service | [See Above](#common-input-variables) | com.github.autopkg.iancohn-recipes.mcmapi |
 | keychain_password_username | [See Above](#common-input-variables) | `<None>` |
 | mcm_site_server_fqdn | [See Above](#common-input-variables) | `<None>` |
+| mcm_ssl_verification | [See Above](#common-input-variables) | `False` |
 | object_class | The class of the object to move | `<None>` |
 | object_key | The object key of the object that will be moved | `%app_model_name%` |
 | current_object_path | The current path of the object. If not populated, McmObjectMover will query MCM | `<None>` |
@@ -110,6 +115,7 @@ Dynamic depending upon the configuration of the **mcm_app_uploader_export_proper
 | keychain_password_service | [See Above](#common-input-variables) | com.github.autopkg.iancohn-recipes.mcmapi |
 | keychain_password_username | [See Above](#common-input-variables) | `<None>` |
 | mcm_site_server_fqdn | [See Above](#common-input-variables) | `<None>` |
+| mcm_ssl_verification | [See Above](#common-input-variables) | `False` |
 | object_key | The object key of the object that will be moved | `%app_model_name%` |
 | security_scopes | A list of at least one security scope to set on the object | `<None>` |
 | action | The action to take on the supplied object and security scopes (`add`, `remove`, `replace`)| `replace` |
@@ -124,7 +130,8 @@ Generate an SDMPackageXML string which represents an MCM Application object.
 | ------------- | ----------- | ------------- |
 | keychain_password_service        | [See Above](#common-input-variables)                         | com.github.autopkg.iancohn-recipes.mcmapi                                                                                                                                                                                                                                                                                                                                                   |
 | keychain_password_username       | [See Above](#common-input-variables)                         | `<None>`                                                                                                                                                                                                                                                                                                                                                                                  |
-| mcm_site_server_fqdn             | [See Above](#common-input-variables)                         | `<None>`                                                                                                                                                                                                                                                                                                                                                                                  |
+| mcm_site_server_fqdn | [See Above](#common-input-variables) | `<None>` |
+| mcm_ssl_verification | [See Above](#common-input-variables) | `False` |
 | mcm_application_configuration | [See Below](#mcm_application_configuration) | `<None>`
 
 ### McmSDMPackageXMLGenerator Output Variables

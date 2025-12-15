@@ -49,6 +49,14 @@ class McmApplicationUploader(McmApplicationUploaderBase):
             "required": True,
             "description": "The FQDN of the site server. Ex. mcm.domain.com"
         },
+        "mcm_ssl_verification": {
+            "required": False,
+            "description": 
+                "Either a boolean, in which case it controls whether we verify the "
+                "server’s TLS certificate, or a string, in which case it must be a "
+                "path to a CA bundle to use",
+            "default": False
+        },
         "mcm_application_ci_id": {
             "required": False,
             "description": "The CI_ID to post the application to. If not specified, or if '0', a new application will be created.",

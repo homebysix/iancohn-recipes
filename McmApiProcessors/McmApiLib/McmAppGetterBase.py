@@ -40,6 +40,7 @@ class McmAppGetterBase(McmApiBase):
     def initialize_all(self):
         self.initialize_headers()
         self.initialize_ntlm_auth()
+        self.initialize_ssl_verification()
         self.initialize_export_properties("mcm_app_getter_export_properties")
         self.fqdn = self.env.get('mcm_site_server_fqdn')
         self.application_name = self.env.get('application_name')
