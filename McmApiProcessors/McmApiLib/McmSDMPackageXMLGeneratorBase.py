@@ -615,7 +615,7 @@ class McmSDMPackageXMLGeneratorBase(McmApiBase):
         nodes.append(XmlNodeAsDict(NodeName = 'SettingReference', Attributes = attributes))
         if ['Between', 'OneOf', 'NoneOf'].__contains__(setting_options.get('Operator')):
             comparisons = []
-            for c in setting_options.get('Value', []):
+            for c in setting_options.get('ValueData', []):
                 item = self.new_constant_value(value = c, data_type = setting_options['DataType'])
                 comparisons.append(item)
             comparison = self.new_constant_value_list(constant_values = comparisons)
