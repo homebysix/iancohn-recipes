@@ -87,6 +87,9 @@ class McmSDMPackageXMLGeneratorBase(McmApiBase):
             'MSI': self.get_msi_setting_reference_nodes, 
             'SimpleSetting': self.get_registryvalue_setting_reference_nodes
         }
+        self.initialize_headers()
+        self.initialize_ntlm_auth()
+        self.initialize_ssl_verification()
 
     # User nodes
     @staticmethod
