@@ -665,7 +665,7 @@ class McmApiBase(Processor):
         parameters and return an HttpNtlmAuth object from the retrieved
         details
         """
-        if self.__getattribute__('ntlm_auth', None) is not None and isinstance(self.ntlm_auth, HttpNtlmAuth):
+        if self.__getattribute__('ntlm_auth') is not None and isinstance(self.ntlm_auth, HttpNtlmAuth):
             self.output("NTLM Auth object exists. Returning it", 3)
             return self.ntlm_auth
         self.output("NTLM Auth object does not currently exist. It will be created", 3)
@@ -865,7 +865,7 @@ class McmApiBase(Processor):
     def get_ssl_verify_param(self):
         """Get the value of the 'verify' parameter for http requests
         """
-        if self.__getattribute__('ssl_verify', None) is not None and (
+        if self.__getattribute__('ssl_verify') is not None and (
             isinstance(self.ssl_verify, bool) or isinstance(self.ssl_verify, str)
             ):
             self.output("ssl_verify object exists. Returning it", 3)
@@ -891,7 +891,7 @@ class McmApiBase(Processor):
         return element
 
     def set_export_properties(self):
-        if self.__getattribute__('response_value', None) is None:
+        if self.__getattribute__('response_value') is None:
             raise ProcessorError("No response value")
         self.output("Attempting to set export properties", 2)
         for k in list(self.export_properties.keys()):
