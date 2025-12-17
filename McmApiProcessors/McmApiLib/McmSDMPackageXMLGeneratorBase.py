@@ -216,9 +216,10 @@ class McmSDMPackageXMLGeneratorBase(McmApiBase):
         """Inspect an icon .png file, encode the binary data, and return
         the the information as an XmlNodeAsDict instance
         """
-        if not local_path.lower().endswith('.png'):
+        resolved_path = str(Path(local_path).resolve())
+        if not resolved_path.lower().endswith('.png'):
             raise ProcessorError("Only PNG files are supported for icons.")
-        with Image.open(local_path) as old:
+        with Image.open(resolved_path) as old:
             reduced = Image.new("RGB", old.size)
             reduced.paste(old)
             buffer = BytesIO()
