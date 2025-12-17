@@ -1849,7 +1849,7 @@ class McmSDMPackageXMLGeneratorBase(McmApiBase):
             self.output(f"Supplied icon path: {i}", 3 )
             resolved_icon_path = str(Path(i).resolve())
             self.output(f"Resolved icon path: {resolved_icon_path}", 3)
-            icon_resources_hash[i] = self.new_icon_resource(resolved_icon_path = i)
+            icon_resources_hash[i] = self.new_icon_resource(local_path=resolved_icon_path)
             icon_references_hash[i] = self.get_icon_reference(icon_resource = icon_resources_hash[i])
             all_resources.append(icon_resources_hash[i])
             icon_resources.append(icon_resources_hash[i])
