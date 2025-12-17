@@ -216,10 +216,9 @@ class McmSDMPackageXMLGeneratorBase(McmApiBase):
         """Inspect an icon .png file, encode the binary data, and return
         the the information as an XmlNodeAsDict instance
         """
-        resolved_path = str(Path(local_path).resolve())
-        if not resolved_path.lower().endswith('.png'):
+        if not local_path.lower().endswith('.png'):
             raise ProcessorError("Only PNG files are supported for icons.")
-        with Image.open(resolved_path) as old:
+        with Image.open(local_path) as old:
             reduced = Image.new("RGB", old.size)
             reduced.paste(old)
             buffer = BytesIO()
@@ -1847,8 +1846,10 @@ class McmSDMPackageXMLGeneratorBase(McmApiBase):
         all_resources = []
         self.output("Getting icon resource hashes.", 3)
         for i in icon_file_unix_paths:
-            self.output(f"{i}", 3 )
-            icon_resources_hash[i] = self.new_icon_resource(local_path = i)
+            self.output(f"Supplied icon path: {i}", 3 )
+            resolved_icon_path = str(Path(i).resolve())
+            self.output(f"Resolved icon path: {resolved_icon_path}", 3)
+            icon_resources_hash[i] = self.new_icon_resource(resolved_icon_path = i)
             icon_references_hash[i] = self.get_icon_reference(icon_resource = icon_resources_hash[i])
             all_resources.append(icon_resources_hash[i])
             icon_resources.append(icon_resources_hash[i])
