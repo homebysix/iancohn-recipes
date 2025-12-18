@@ -74,10 +74,22 @@ class MSStoreDownloader(URLGetter):
             "description": "The version of the store app"
         },
         "total_dependencies": {
-            "description": "The number of dependencies downloaded."
+            "description": "The number of dependencies downloaded"
         },
         "total_files": {
             "description": "The number of files downloaded"
+        },
+        "appx_package_display_name": {
+            "description": "The display name of the application"
+        },
+        "appx_package_name": {
+            "description": "The full name of the appx package"
+        },
+        "appx_architecture": {
+            "description": "The architecture of the AppxPackage"
+        },
+        "appx_vendor_identifier": {
+            "description": "The unique identifier of the vendor"
         },
         "msstore_title": {
             "description": "The title (as retrieved from its metadata in the Microsoft Store)"
@@ -234,12 +246,18 @@ class MSStoreDownloader(URLGetter):
         else:
             self.output("Download directory already exists.")
         package_base_name = selected_fulfillment_data['PackageFamilyName'].split('_')[0]
-        #package_uq_id = selected_fulfillment_data['PackageFamilyName'].split('_')[1]
+        vendor_uq_id = selected_fulfillment_data['PackageFamilyName'].split('_')[1]
         n_files_needed = 0
+        n_dependencies = 0
         main_installer_files = [t[filename_index] for t in download_file_details if package_base_name in t[filename_index]]
         all_versions = [
             self.new_version(t.lstrip(f"{package_base_name}_").split('_')[0]) for t in main_installer_files
             ]
+        self.env['appx_architecture'] = main_installer_files[0].split('_')[2]
+        self.env['appx_package_name'] = os.path.splitext(main_installer_files[0])[0]
+        self.env['appx_package_display_name'] = package_base_name
+        self.env['appx_vendor_identifier'] = vendor_uq_id
+        
         all_versions.sort(reverse=True)
         latest_version_tuple = all_versions[0]
         latest_version_string = ".".join([str(i) for i in list(latest_version_tuple)])
@@ -252,11 +270,15 @@ class MSStoreDownloader(URLGetter):
                 if file_match_string not in detail[filename_index]:
                     self.output(f"{detail[filename_index]} appears to be for an older version. Skipping it.", 4)
                     continue
+            else:
+                n_dependencies += 1
             n_files_needed += 1
             filename = os.path.join(download_folder_path, detail[filename_index])
             self.download_to_file(detail[url_index], filename)
         
         self.output(f"{n_files_needed}/{len(download_file_details)} files determined to be needed for this application.", 3)
+        self.env['total_files'] = n_files_needed
+        self.env['total_dependencies'] = n_dependencies
 
 if __name__ == "__main__":
     PROCESSOR = MSStoreDownloader()
