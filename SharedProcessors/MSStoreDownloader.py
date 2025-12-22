@@ -91,6 +91,15 @@ class MSStoreDownloader(URLGetter):
         "appx_vendor_identifier": {
             "description": "The unique identifier of the vendor"
         },
+        "msstore_main_file_path": {
+            "description": "The main installer file path."
+        },
+        "msstore_main_file_name": {
+            "description": "The main installer file name."
+        },
+        "msstore_main_file_ext": {
+            "description": "The main installer file extension"
+        },
         "msstore_title": {
             "description": "The title (as retrieved from its metadata in the Microsoft Store)"
         },
@@ -263,20 +272,29 @@ class MSStoreDownloader(URLGetter):
         latest_version_string = ".".join([str(i) for i in list(latest_version_tuple)])
         self.output(f"Latest version: {latest_version_string}", 3)
         self.env['version'] = latest_version_string
-
+        self.env['msstore_main_file_path'] = ''
+        self.env['msstore_main_file_name'] = ''
+        self.env['msstore_main_file_ext'] = ''
         for detail in download_file_details:
             file_match_string = f"{package_base_name}_{latest_version_string}_"
+            filename = os.path.join(download_folder_path, detail[filename_index])
             if package_base_name in detail[filename_index]:
                 if file_match_string not in detail[filename_index]:
                     self.output(f"{detail[filename_index]} appears to be for an older version. Skipping it.", 4)
                     continue
+                _ext = os.path.splitext(detail[filename_index])[1]
+                _file_basename = os.path.splitext(detail[filename_index])[0]
+                if self.env['msstore_main_file_path'] == '' and _ext.lower() != 'blockmap':
+                    self.output(f"{detail[filename_index]} appears to be the main installer.", 3)
+                    self.env['msstore_main_file_path'] = filename
+                    self.env['msstore_main_file_name'] = _file_basename
+                    self.env['msstore_main_file_ext'] = _ext
             elif self.env.get('download_dependencies') == False:
                 self.output(f"{detail[filename_index]} is a dependency and download_dependencies was evaluated 'False'. Skipping it.")
                 continue
             else:
                 n_dependencies += 1
             n_files_needed += 1
-            filename = os.path.join(download_folder_path, detail[filename_index])
             self.download_to_file(detail[url_index], filename)
         
         self.output(f"{n_files_needed}/{len(download_file_details)} files determined to be needed for this application.", 3)
