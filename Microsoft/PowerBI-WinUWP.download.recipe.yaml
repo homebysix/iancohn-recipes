@@ -1,0 +1,10 @@
+Description: Download PowerBI Desktop and its dependencies from the Windows Store.
+Identifier: com.github.iancohn.download.PowerBI-WinUWP
+MinimumVersion: 2.3.0
+Input:
+  NAME: PowerBI Desktop - UWP
+  USER_AGENT: Mozilla/5.0 (Windows NT 6.3; Win64, x64; Trident/7.0; rv:11.0) like Gecko
+Process:
+- Processor: com.github.iancohn.SharedProcessors/MSStoreDownloader
+  Arguments:
+    store_detail_url: https://apps.microsoft.com/detail/9ntxr16hnw1t
