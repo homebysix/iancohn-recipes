@@ -284,7 +284,7 @@ class MSStoreDownloader(URLGetter):
                     continue
                 _ext = os.path.splitext(detail[filename_index])[1]
                 _file_basename = os.path.splitext(detail[filename_index])[0]
-                if self.env['msstore_main_file_path'] == '' and _ext.lower() != 'blockmap':
+                if self.env['msstore_main_file_path'] == '' and _ext.lower() != '.blockmap':
                     self.output(f"{detail[filename_index]} appears to be the main installer.", 3)
                     self.env['msstore_main_file_path'] = filename
                     self.env['msstore_main_file_name'] = _file_basename
