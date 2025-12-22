@@ -357,7 +357,7 @@ Each dependency is defined by a dictionary with the properties below
 
 #### Detection Type Notes
 There are two main categories of detection types:
-* **[Custom Script(#custom-script-detection-options)]** (CustomScript) - Detect a successful installation with a PowerShell script
+* **[Custom Script](#custom-script-detection-options)** (CustomScript) - Detect a successful installation with a PowerShell script
 PowerShell scripts which detect the installation will:
   * Output a single string (any string) if the application is installed. To indicate that the application is not installed, the script MUST NOT write out any string (or any object castable as a string)
   * Exit with a '0' exit code. Exiting with a non-zero exit code will cause detection to fail with an error, rather than detecting that the application is or is not installed
